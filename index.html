@@ -1348,12 +1348,14 @@ class MaxRects {
     this.used = [];
   }
 
-  insert(w, h, meta, normalOk = true, rotatedOk = true, scrapPref = 'none') {
+  insert(w, h, meta, normalOk = true, rotatedOk = true, scrapPref = 'none', scoreMode = 'bssf') {
     let best = null, bestScore = Infinity, bestRot = false;
     const score = (fw, fh, pw, ph) => {
-      if (scrapPref === 'length') return fh - ph;        // pack tight in Y → preserves long scrap at bottom
-      if (scrapPref === 'width')  return fw - pw;        // pack tight in X → preserves wide scrap on right
-      return Math.min(fw - pw, fh - ph);                 // BSSF default
+      if (scrapPref === 'length') return fh - ph;
+      if (scrapPref === 'width')  return fw - pw;
+      if (scoreMode === 'baf')  return fw * fh - pw * ph;          // Best Area Fit
+      if (scoreMode === 'blsf') return Math.max(fw - pw, fh - ph); // Best Long Side Fit
+      return Math.min(fw - pw, fh - ph);                           // BSSF default
     };
     for (const r of this.free) {
       if (normalOk && w <= r.w && h <= r.h) {
@@ -1406,39 +1408,58 @@ class MaxRects {
 
 // ── Packing ───────────────────────────────────────────────────────────────────
 function packOnSheet(W, H, items, kerf, allowRotation, scrapPref = 'none') {
-  // Sort strategies — add scrap-preference-biased sorts as extra candidates
-  const strategies = [
-    (a, b) => (b.w * b.h) - (a.w * a.h),
-    (a, b) => (b.w + b.h) - (a.w + a.h),
-    (a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h),
-    (a, b) => Math.min(b.w, b.h) - Math.min(a.w, a.h),
-    // Biased sorts: pack tall pieces first for "keep length", wide pieces first for "keep width"
+  const sortOrders = [
+    (a, b) => (b.w * b.h) - (a.w * a.h),           // area desc
+    (a, b) => (b.w + b.h) - (a.w + a.h),            // perimeter desc
+    (a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h), // max dim desc
+    (a, b) => Math.min(b.w, b.h) - Math.min(a.w, a.h), // min dim desc
+    (a, b) => b.h - a.h,                             // tallest first
+    (a, b) => b.w - a.w,                             // widest first
+    (a, b) => a.h - b.h,                             // shortest first
+    (a, b) => a.w - b.w,                             // narrowest first
+    (a, b) => (b.h / b.w) - (a.h / a.w),            // most elongated first
     ...(scrapPref === 'length' ? [(a, b) => b.h - a.h, (a, b) => a.w - b.w] : []),
     ...(scrapPref === 'width'  ? [(a, b) => b.w - a.w, (a, b) => a.h - b.h] : []),
   ];
-  let best = null, bestPlaced = -1, bestWaste = Infinity;
-  for (const cmp of strategies) {
-    const sorted = [...items].sort(cmp);
-    const packer = new MaxRects(W, H);
-    const unplaced = [];
-    for (const item of sorted) {
-      let normalOk = true, rotatedOk = true;
-      if (!allowRotation) {
-        normalOk  = item.grainDir !== 'height';
-        rotatedOk = item.grainDir !== 'width';
+  // Three placement scoring modes — each favours different packing shapes
+  const scoreModes = scrapPref !== 'none' ? ['bssf'] : ['bssf', 'baf', 'blsf'];
+
+  let best = null, bestPlaced = -1, bestCompact = Infinity, bestWaste = Infinity;
+
+  for (const cmp of sortOrders) {
+    for (const mode of scoreModes) {
+      const sorted = [...items].sort(cmp);
+      const packer = new MaxRects(W, H);
+      const unplaced = [];
+      for (const item of sorted) {
+        let normalOk = true, rotatedOk = true;
+        if (!allowRotation) {
+          normalOk  = item.grainDir !== 'height';
+          rotatedOk = item.grainDir !== 'width';
+        }
+        const ok = packer.insert(item.w - kerf, item.h - kerf, {
+          origW: item.w, origH: item.h,
+          label: item.label, color: item.color, pieceId: item.pieceId,
+        }, normalOk, rotatedOk, scrapPref, mode);
+        if (!ok) unplaced.push(item);
       }
-      const ok = packer.insert(item.w - kerf, item.h - kerf, {
-        origW: item.w, origH: item.h,
-        label: item.label, color: item.color, pieceId: item.pieceId,
-      }, normalOk, rotatedOk, scrapPref);
-      if (!ok) unplaced.push(item);
-    }
-    const usedArea = packer.used.reduce((s, r) => s + (r.w + kerf) * (r.h + kerf), 0);
-    const waste = W * H - usedArea;
-    if (packer.used.length > bestPlaced || (packer.used.length === bestPlaced && waste < bestWaste)) {
-      bestPlaced = packer.used.length;
-      bestWaste = waste;
-      best = { packer, unplaced };
+      // Compactness: bounding box area of all placed pieces (smaller = more clustered)
+      const compact = packer.used.length === 0 ? Infinity :
+        Math.max(...packer.used.map(r => r.x + r.w)) *
+        Math.max(...packer.used.map(r => r.y + r.h));
+      const usedArea = packer.used.reduce((s, r) => s + (r.w + kerf) * (r.h + kerf), 0);
+      const waste = W * H - usedArea;
+
+      const better = packer.used.length > bestPlaced ||
+        (packer.used.length === bestPlaced && compact < bestCompact) ||
+        (packer.used.length === bestPlaced && compact === bestCompact && waste < bestWaste);
+
+      if (better) {
+        bestPlaced  = packer.used.length;
+        bestCompact = compact;
+        bestWaste   = waste;
+        best = { packer, unplaced };
+      }
     }
   }
   return best;
