@@ -986,6 +986,7 @@ header .logo-mark {
             <button class="option-pill active" data-scrap="none">Balanced</button>
             <button class="option-pill" data-scrap="length">Keep length</button>
             <button class="option-pill" data-scrap="width">Keep width</button>
+            <button class="option-pill" data-scrap="cuts">Fewer cuts</button>
           </div>
           <div class="advanced-note" id="scrap-note">Pack evenly to minimize total waste.</div>
         </div>
@@ -1406,9 +1407,48 @@ class MaxRects {
   }
 }
 
+// ── Cut counting ─────────────────────────────────────────────────────────────
+// Count unique interior rip cuts (vertical, at x positions) and cross cuts
+// (horizontal, at y positions) required to separate all placed pieces.
+// Edge lines (x=0, x=W, y=0, y=H) are the initial sheet edges — not counted.
+function countCuts(used, W, H, kerf) {
+  const tol = 0.01;
+  const xCuts = new Set(); // rip cuts (parallel to length/grain)
+  const yCuts = new Set(); // cross cuts
+  for (const r of used) {
+    // Left edge of piece (rip cut needed unless it's at sheet left edge)
+    if (r.x > tol) xCuts.add(Math.round(r.x / tol) * tol);
+    // Right edge of piece (rip cut needed unless it's at sheet right edge)
+    const rx = r.x + r.w + kerf;
+    if (rx < W - tol) xCuts.add(Math.round(rx / tol) * tol);
+    // Top edge
+    if (r.y > tol) yCuts.add(Math.round(r.y / tol) * tol);
+    // Bottom edge
+    const ry = r.y + r.h + kerf;
+    if (ry < H - tol) yCuts.add(Math.round(ry / tol) * tol);
+  }
+  return xCuts.size + yCuts.size;
+}
+
 // ── Packing ───────────────────────────────────────────────────────────────────
 function packOnSheet(W, H, items, kerf, allowRotation, scrapPref = 'none') {
-  const sortOrders = [
+  // Sort orders that group pieces sharing a dimension together → shared cut lines
+  const cutsSortOrders = [
+    // Group by width (same rip-cut positions), then tallest-first within group
+    (a, b) => a.w !== b.w ? a.w - b.w : b.h - a.h,
+    // Group by width descending, then tallest-first
+    (a, b) => a.w !== b.w ? b.w - a.w : b.h - a.h,
+    // Group by height (same cross-cut positions), then widest-first within group
+    (a, b) => a.h !== b.h ? a.h - b.h : b.w - a.w,
+    // Group by height descending, then widest-first
+    (a, b) => a.h !== b.h ? b.h - a.h : b.w - a.w,
+    // Width groups then area desc (fills rows left-to-right tightly)
+    (a, b) => a.w !== b.w ? a.w - b.w : (b.w * b.h) - (a.w * a.h),
+    // Height groups then area desc
+    (a, b) => a.h !== b.h ? a.h - b.h : (b.w * b.h) - (a.w * a.h),
+  ];
+
+  const sortOrders = scrapPref === 'cuts' ? cutsSortOrders : [
     (a, b) => (b.w * b.h) - (a.w * a.h),           // area desc
     (a, b) => (b.w + b.h) - (a.w + a.h),            // perimeter desc
     (a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h), // max dim desc
@@ -1424,41 +1464,56 @@ function packOnSheet(W, H, items, kerf, allowRotation, scrapPref = 'none') {
   // Three placement scoring modes — each favours different packing shapes
   const scoreModes = scrapPref !== 'none' ? ['bssf'] : ['bssf', 'baf', 'blsf'];
 
-  let best = null, bestPlaced = -1, bestCompact = Infinity, bestWaste = Infinity;
+  let best = null, bestPlaced = -1, bestCuts = Infinity, bestCompact = Infinity, bestWaste = Infinity;
 
-  for (const cmp of sortOrders) {
-    for (const mode of scoreModes) {
-      const sorted = [...items].sort(cmp);
-      const packer = new MaxRects(W, H);
-      const unplaced = [];
-      for (const item of sorted) {
-        let normalOk = true, rotatedOk = true;
-        if (!allowRotation) {
-          normalOk  = item.grainDir !== 'height';
-          rotatedOk = item.grainDir !== 'width';
+  // For "fewer cuts" we try both rotation-locked (preserves width groups) and free rotation
+  const rotationVariants = scrapPref === 'cuts' ? [false, allowRotation] : [allowRotation];
+
+  for (const rotOpt of rotationVariants) {
+    for (const cmp of sortOrders) {
+      for (const mode of scoreModes) {
+        const sorted = [...items].sort(cmp);
+        const packer = new MaxRects(W, H);
+        const unplaced = [];
+        for (const item of sorted) {
+          let normalOk = true, rotatedOk = rotOpt;
+          if (!allowRotation) {
+            normalOk  = item.grainDir !== 'height';
+            rotatedOk = item.grainDir !== 'width';
+          }
+          const ok = packer.insert(item.w - kerf, item.h - kerf, {
+            origW: item.w, origH: item.h,
+            label: item.label, color: item.color, pieceId: item.pieceId,
+          }, normalOk, rotatedOk, scrapPref === 'cuts' ? 'none' : scrapPref, mode);
+          if (!ok) unplaced.push(item);
         }
-        const ok = packer.insert(item.w - kerf, item.h - kerf, {
-          origW: item.w, origH: item.h,
-          label: item.label, color: item.color, pieceId: item.pieceId,
-        }, normalOk, rotatedOk, scrapPref, mode);
-        if (!ok) unplaced.push(item);
-      }
-      // Compactness: bounding box area of all placed pieces (smaller = more clustered)
-      const compact = packer.used.length === 0 ? Infinity :
-        Math.max(...packer.used.map(r => r.x + r.w)) *
-        Math.max(...packer.used.map(r => r.y + r.h));
-      const usedArea = packer.used.reduce((s, r) => s + (r.w + kerf) * (r.h + kerf), 0);
-      const waste = W * H - usedArea;
+        // Compactness: bounding box area of all placed pieces (smaller = more clustered)
+        const compact = packer.used.length === 0 ? Infinity :
+          Math.max(...packer.used.map(r => r.x + r.w)) *
+          Math.max(...packer.used.map(r => r.y + r.h));
+        const usedArea = packer.used.reduce((s, r) => s + (r.w + kerf) * (r.h + kerf), 0);
+        const waste = W * H - usedArea;
+        const cuts = scrapPref === 'cuts' ? countCuts(packer.used, W, H, kerf) : 0;
 
-      const better = packer.used.length > bestPlaced ||
-        (packer.used.length === bestPlaced && compact < bestCompact) ||
-        (packer.used.length === bestPlaced && compact === bestCompact && waste < bestWaste);
+        let better;
+        if (scrapPref === 'cuts') {
+          better = packer.used.length > bestPlaced ||
+            (packer.used.length === bestPlaced && cuts < bestCuts) ||
+            (packer.used.length === bestPlaced && cuts === bestCuts && compact < bestCompact) ||
+            (packer.used.length === bestPlaced && cuts === bestCuts && compact === bestCompact && waste < bestWaste);
+        } else {
+          better = packer.used.length > bestPlaced ||
+            (packer.used.length === bestPlaced && compact < bestCompact) ||
+            (packer.used.length === bestPlaced && compact === bestCompact && waste < bestWaste);
+        }
 
-      if (better) {
-        bestPlaced  = packer.used.length;
-        bestCompact = compact;
-        bestWaste   = waste;
-        best = { packer, unplaced };
+        if (better) {
+          bestPlaced  = packer.used.length;
+          bestCuts    = cuts;
+          bestCompact = compact;
+          bestWaste   = waste;
+          best = { packer, unplaced };
+        }
       }
     }
   }
@@ -1806,6 +1861,7 @@ const SCRAP_NOTES = {
   none:   'Pack evenly to minimize total waste.',
   length: 'Consolidate cuts toward one end — preserves a long usable section.',
   width:  'Consolidate cuts toward one side — preserves a wide usable section.',
+  cuts:   'Group pieces by shared dimensions — minimizes total rip and cross cuts.',
 };
 document.querySelectorAll('[data-scrap]').forEach(btn => {
   btn.addEventListener('click', () => {
