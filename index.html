@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Cut Doctor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #efede4;
+  --dark:     #1f1c19;
+  --primary:  #bf3800;
+  --primary-h:#a33000;
+  --primary-l:#fdeee8;
+  --primary-b:#e8a080;
+  --gold:     #a0862a;
+  --panel:    #ffffff;
+  --text:     #1f1c19;
+  --muted:    #7a7268;
+  --border:   #e2ddd5;
+  --font-display: 'Geist', system-ui, sans-serif;
+  --font-heading: 'Geist', system-ui, sans-serif;
+  --font-body:    'Geist', system-ui, sans-serif;
+  --font-mono:    'Geist Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+header {
+  background: var(--dark);
+  color: white;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+}
+
+header svg { opacity: 0.75; }
+header h1 {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+header .header-sub {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+header .logo-mark {
+  height: 28px;
+  width: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+}
+
+.layout {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 0;
+  align-items: start;
+}
+
+.panel {
+  background: var(--panel);
+  border-radius: 0;
+  border: 1px solid var(--border);
+  padding: 20px;
+  box-shadow: none;
+}
+
+.panel-title {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.dim-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dim-row .x-label {
+  text-align: center;
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.field label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.field input, .field select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  transition: border-color 0.15s;
+  background: #faf9f6;
+  color: var(--text);
+}
+
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: white;
+}
+
+.kerf-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  margin-bottom: 2px;
+}
+
+.kerf-row label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.kerf-row input[type=checkbox] { cursor: pointer; accent-color: var(--primary); }
+.kerf-row input[type=number] {
+  width: 90px;
+  padding: 5px 8px;
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  background: #faf9f6;
+  color: var(--text);
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+.pieces-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.pieces-header .panel-title { margin-bottom: 0; }
+
+.btn-icon {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  width: 28px;
+  height: 28px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.btn-icon:hover { background: var(--primary-h); }
+
+/* ── Piece item — receipt / spreadsheet style ─────────────────────────────── */
+.piece-item {
+  background: #faf9f6;
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+.piece-item.disabled { opacity: 0.42; }
+
+/* Name row */
+.piece-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px 7px;
+}
+
+.piece-drag-handle {
+  color: #c8c0b6;
+  font-size: 0.95rem;
+  cursor: grab;
+  flex-shrink: 0;
+  line-height: 1;
+  user-select: none;
+  letter-spacing: -1px;
+  padding-right: 2px;
+  touch-action: none;
+}
+.piece-drag-handle:hover { color: #9a9088; }
+.piece-item[draggable="true"] { cursor: grabbing; }
+
+.piece-label-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+  padding: 0;
+}
+
+/* piece-item right actions */
+.piece-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Data row — ruled table cells */
+.piece-data-row {
+  display: flex;
+  align-items: stretch;
+  border-top: 1px solid var(--border);
+}
+
+.piece-data-cell {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+}
+.piece-data-cell + .piece-data-cell {
+  border-left: 1px solid var(--border);
+}
+.piece-data-cell.flex-grow { flex: 1; }
+
+/* Cell label (W / H / QTY) */
+.piece-cell-key {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* Cell value input */
+.piece-cell-val {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 1.0rem;
+  font-weight: 500;
+  color: var(--text);
+  width: 44px;
+  padding: 0;
+  -moz-appearance: textfield;
+}
+.piece-cell-val::-webkit-inner-spin-button,
+.piece-cell-val::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* × separator between W and H */
+.piece-dim-sep {
+  display: flex;
+  align-items: center;
+  padding: 7px 8px;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.78rem;
+  flex-shrink: 0;
+}
+
+/* Stepper buttons */
+.qty-stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-left: 2px;
+}
+.qty-stepper-btn {
+  width: 14px;
+  height: 11px;
+  background: var(--border);
+  border: none;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 0;
+  transition: background 0.12s, color 0.12s;
+  line-height: 1;
+}
+.qty-stepper-btn:hover { background: var(--primary); color: white; }
+.qty-stepper-btn svg { display: block; }
+
+
+/* piece-item right actions — still used in name row */
+
+/* reuse toggle */
+.piece-toggle {
+  position: relative;
+  width: 28px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.piece-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+
+.piece-toggle-track {
+  position: absolute;
+  inset: 0;
+  background: #d6cfc5;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.piece-toggle input:checked + .piece-toggle-track { background: var(--primary); }
+
+.piece-toggle-track::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.piece-toggle input:checked + .piece-toggle-track::after { transform: translateX(12px); }
+
+.qty-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qty-wrap label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.qty-wrap input {
+  width: 52px;
+  padding: 6px 8px;
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  background: white;
+  color: var(--text);
+}
+
+.qty-wrap input:focus { outline: none; border-color: var(--primary); }
+
+.btn-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #c8c0b6;
+  font-size: 1rem;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-remove:hover { color: var(--primary); }
+
+.btn-add-piece {
+  width: 100%;
+  padding: 8px;
+  background: none;
+  border: 1px dashed #c8c0b6;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #b0a898;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-add-piece:hover { border-color: var(--primary); color: var(--primary); }
+
+/* Sheet items share the piece receipt layout */
+.sheet-item {
+  background: #faf9f6;
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+.sheet-label-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--dark);
+  color: white;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+
+/* Right panel */
+.right-panel { display: flex; flex-direction: column; gap: 0; }
+
+.canvas-panel {
+  background: var(--panel);
+  border-radius: 0;
+  border: 1px solid var(--border);
+  padding: 20px;
+  box-shadow: none;
+}
+
+.canvas-panel canvas {
+  width: 100%;
+  display: block;
+  border-radius: 0;
+  background: #faf8f4;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #c8c0b6;
+  gap: 10px;
+}
+
+.empty-state svg { opacity: 0.4; }
+.empty-state p { font-size: 0.9rem; font-family: var(--font-body); }
+
+/* Stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+}
+
+.stat-card {
+  background: var(--panel);
+  border-radius: 0;
+  border: 1px solid var(--border);
+  margin-right: -1px;
+  margin-bottom: -1px;
+  padding: 14px 16px;
+  box-shadow: none;
+}
+
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--dark);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.stat-value.waste { color: var(--primary); }
+.stat-value.good  { color: var(--gold); }
+
+.stat-sub {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
+/* Pieces result */
+.pieces-result {
+  background: var(--panel);
+  border-radius: 0;
+  border: 1px solid var(--border);
+  padding: 20px;
+  box-shadow: none;
+}
+
+.piece-result-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0ede8;
+  font-size: 0.875rem;
+}
+
+.piece-result-row:last-child { border-bottom: none; }
+
+
+.piece-result-name { flex: 1; font-weight: 500; font-size: 0.85rem; }
+.piece-result-dims { color: var(--muted); font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.02em; }
+.piece-result-count { color: var(--muted); font-family: var(--font-mono); font-size: 0.75rem; min-width: 60px; text-align: right; }
+
+.badge-unplaced {
+  background: #fef0e6;
+  color: var(--primary);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: 1px solid rgba(191,56,0,0.2);
+}
+
+.badge-rotated {
+  background: #ede9e2;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 14px;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--border);
+}
+
+/* Viz toolbar buttons */
+.viz-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.viz-btn:hover { color: var(--text); border-color: #b0a898; }
+.viz-btn.active { background: var(--dark); color: white; border-color: var(--dark); }
+
+.legend-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+}
+
+/* ── Advanced options ────────────────────────────────────────────────────── */
+.advanced-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+}
+.advanced-toggle:hover { color: var(--text); }
+.advanced-toggle svg { transition: transform 0.2s; flex-shrink: 0; }
+.advanced-toggle.open svg { transform: rotate(180deg); }
+
+.advanced-body {
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 12px;
+}
+.advanced-body.open { display: flex; }
+
+.advanced-row {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.advanced-row-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+/* 3-option pill selector */
+.option-pills {
+  display: flex;
+  background: #f0ede8;
+  border-radius: 3px;
+  padding: 3px;
+  gap: 2px;
+}
+.option-pill {
+  flex: 1;
+  padding: 5px 6px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  text-align: center;
+  white-space: nowrap;
+}
+.option-pill:hover { color: var(--text); }
+.option-pill.active {
+  background: white;
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(31,28,25,0.12);
+}
+.option-pill.active.accent {
+  background: var(--primary-l);
+  color: var(--primary);
+  box-shadow: 0 1px 3px rgba(191,56,0,0.12);
+}
+
+.advanced-note {
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+
+/* ── Dark mode ───────────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg:       #1c1a15;
+  --dark:     #0f0e0b;
+  --primary:  #d94a00;
+  --primary-h:#c04000;
+  --primary-l:#2a1200;
+  --primary-b:#6b2800;
+  --gold:     #b89830;
+  --panel:    #242018;
+  --text:     #eceadf;
+  --muted:    #8a8270;
+  --border:   #38332a;
+}
+
+[data-theme="dark"] body { color-scheme: dark; }
+
+[data-theme="dark"] .piece-item,
+[data-theme="dark"] .sheet-item { background: #2c2820; }
+
+[data-theme="dark"] .piece-label-input,
+[data-theme="dark"] .piece-cell-val { color: var(--text); background: transparent; }
+
+[data-theme="dark"] .field input,
+[data-theme="dark"] .field select,
+[data-theme="dark"] .kerf-row input[type=number] { background: #2c2820; color: var(--text); }
+
+[data-theme="dark"] .field input:focus,
+[data-theme="dark"] .field select:focus { background: #332e26; }
+
+[data-theme="dark"] .piece-toggle-track { background: #4a4438; }
+
+[data-theme="dark"] .qty-stepper-btn { background: #38332a; color: var(--muted); }
+[data-theme="dark"] .qty-stepper-btn:hover { background: var(--primary); color: white; }
+
+[data-theme="dark"] .option-pills { background: #2c2820; }
+[data-theme="dark"] .option-pill.active { background: #3a3428; color: var(--text); box-shadow: none; }
+
+[data-theme="dark"] .sheet-label-badge { background: var(--text); color: var(--dark); }
+
+[data-theme="dark"] .btn-remove { color: #5a5248; }
+[data-theme="dark"] .btn-remove:hover { color: var(--primary); }
+
+[data-theme="dark"] .piece-drag-handle { color: #4a4438; }
+[data-theme="dark"] .piece-drag-handle:hover { color: #7a7060; }
+
+[data-theme="dark"] .btn-add-piece { border-color: #38332a; color: #5a5248; }
+[data-theme="dark"] .btn-add-piece:hover { border-color: var(--primary); color: var(--primary); }
+
+[data-theme="dark"] .badge-unplaced { background: #3d1400; color: #ff7a50; border-color: rgba(255,100,50,0.25); }
+[data-theme="dark"] .badge-rotated { background: #2c2820; border-color: var(--border); }
+
+[data-theme="dark"] .stat-value.good { color: #c8a840; }
+[data-theme="dark"] .stat-value.waste { color: #e05030; }
+
+[data-theme="dark"] .piece-result-row { border-bottom-color: var(--border); }
+
+[data-theme="dark"] .viz-btn { border-color: var(--border); color: var(--muted); background: transparent; }
+[data-theme="dark"] .viz-btn:hover { color: var(--text); border-color: #5a5248; }
+[data-theme="dark"] .viz-btn.active { background: var(--text); color: var(--dark); border-color: var(--text); }
+
+[data-theme="dark"] .legend-swatch { border-color: var(--border) !important; }
+
+/* Theme toggle button in header */
+.theme-toggle {
+  margin-left: auto;
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 3px;
+  color: rgba(255,255,255,0.55);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.theme-toggle:hover { border-color: rgba(255,255,255,0.4); color: white; }
+.theme-toggle .icon-sun  { display: none; }
+.theme-toggle .icon-moon { display: block; }
+[data-theme="dark"] .theme-toggle .icon-sun  { display: block; }
+[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Header */
+  header {
+    padding: 11px 16px;
+    gap: 10px;
+  }
+  header h1 { font-size: 0.9rem; }
+  header .header-sub { font-size: 0.65rem; }
+
+  /* Layout */
+  .layout {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  /* Panels */
+  .panel { padding: 14px 14px; }
+  .canvas-panel { padding: 14px 14px; }
+  .pieces-result { padding: 14px 14px; }
+
+  /* Stats — 2×2 on mobile */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+  }
+  .stat-card { padding: 11px 13px; }
+  .stat-value { font-size: 1.35rem; }
+
+  /* Sheet/piece header row — stack units selector below title on small screens */
+  .panel > div:first-child {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .panel > div:first-child .field {
+    width: 100% !important;
+  }
+
+  /* Piece / sheet tiles — larger touch targets */
+  .piece-name-row { padding: 10px 12px 9px; }
+  .piece-data-cell { padding: 9px 10px; }
+  .piece-cell-val {
+    width: 48px;
+    font-size: 1.05rem;
+  }
+
+  /* Qty stepper — bigger tap area */
+  .qty-stepper-btn {
+    width: 18px;
+    height: 14px;
+  }
+
+  /* Toggle — slightly bigger */
+  .piece-toggle { width: 32px; height: 18px; }
+  .piece-toggle-track::after { width: 14px; height: 14px; }
+  .piece-toggle input:checked + .piece-toggle-track::after { transform: translateX(14px); }
+
+  /* Remove button — bigger tap area */
+  .btn-remove {
+    padding: 4px 8px;
+    font-size: 1.1rem;
+  }
+
+  /* Add piece/sheet button — more height */
+  .btn-add-piece { padding: 11px 8px; }
+
+  /* Kerf row — stack on very narrow */
+  .kerf-row { flex-wrap: wrap; gap: 6px; }
+  .kerf-row input[type=number] { width: 80px; }
+
+  /* Advanced option pills — wrap if needed */
+  .option-pills { flex-wrap: wrap; }
+  .option-pill { flex: 1 1 auto; padding: 7px 6px; font-size: 0.63rem; }
+
+  /* Canvas — ensure it fills width */
+  .canvas-panel canvas { border-radius: 0; }
+
+  /* Piece result rows */
+  .piece-result-row { flex-wrap: wrap; gap: 6px; }
+  .piece-result-count { min-width: auto; text-align: left; }
+
+  /* Legend — tighter */
+  .legend-row { gap: 10px; font-size: 0.72rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <img class="logo-mark" src="https://www.figma.com/api/mcp/asset/51c434e1-465d-401d-b48d-b36a31428423" alt="The Cut Doctor logo">
+  <div style="width:1px;height:24px;background:rgba(255,255,255,0.15);margin:0 4px;"></div>
+  <div>
+    <h1>The Cut Doctor</h1>
+    <div class="header-sub">Cut Layout Calculator</div>
+  </div>
+  <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">
+    <!-- Moon (shown in light mode) -->
+    <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
+    <!-- Sun (shown in dark mode) -->
+    <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+  </button>
+</header>
+
+<div class="layout">
+  <!-- Left: inputs -->
+  <div>
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div class="panel-title" style="margin-bottom:0;">Material Sheets</div>
+        <div class="field" style="margin:0;width:130px;">
+          <select id="units" style="padding:5px 8px;font-size:0.8rem;">
+            <option value="in">Inches (in)</option>
+            <option value="mm">Millimeters (mm)</option>
+            <option value="cm">Centimeters (cm)</option>
+            <option value="ft">Feet (ft)</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="sheets-list"></div>
+
+      <button class="btn-add-piece" id="add-sheet" style="margin-bottom:0;">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+        Add sheet
+      </button>
+
+      <div class="kerf-row">
+        <input type="checkbox" id="kerf-enabled" checked>
+        <label for="kerf-enabled">Saw kerf / gap:</label>
+        <input type="number" inputmode="decimal" id="kerf-val" value="0.125" min="0" step="0.0625"> <span style="font-size:0.8rem;color:#aaa;">in</span>
+      </div>
+
+      <hr class="divider" style="margin-top:12px;">
+
+      <!-- Advanced options -->
+      <button class="advanced-toggle" id="advanced-toggle">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="2,3.5 5,6.5 8,3.5"/>
+        </svg>
+        Advanced options
+      </button>
+
+      <div class="advanced-body" id="advanced-body">
+
+        <!-- Grain direction -->
+        <div class="advanced-row">
+          <div class="advanced-row-label">Grain direction</div>
+          <div class="option-pills">
+            <button class="option-pill active" data-grain="off" id="grain-off">Any</button>
+            <button class="option-pill" data-grain="on" id="grain-on">Lock to grain</button>
+          </div>
+          <div id="grain-note" style="display:none;" class="advanced-note">
+            Pieces won't be rotated — length stays along the sheet's length.
+          </div>
+        </div>
+
+        <!-- Scrap preference -->
+        <div class="advanced-row">
+          <div class="advanced-row-label">Scrap preference</div>
+          <div class="option-pills">
+            <button class="option-pill active" data-scrap="none">Balanced</button>
+            <button class="option-pill" data-scrap="length">Keep length</button>
+            <button class="option-pill" data-scrap="width">Keep width</button>
+          </div>
+          <div class="advanced-note" id="scrap-note">Pack evenly to minimize total waste.</div>
+        </div>
+
+      </div>
+
+      <hr class="divider">
+
+      <div class="pieces-header">
+        <div class="panel-title">Pieces to Cut</div>
+      </div>
+
+      <div id="pieces-list"></div>
+
+      <button class="btn-add-piece" id="add-piece">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+        Add piece
+      </button>
+
+    </div>
+
+    <div class="stats-grid" id="stats" style="display:none;">
+      <div class="stat-card">
+        <div class="stat-label">Material Used</div>
+        <div class="stat-value good" id="stat-used">—</div>
+        <div class="stat-sub" id="stat-used-area">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Waste</div>
+        <div class="stat-value waste" id="stat-waste">—</div>
+        <div class="stat-sub" id="stat-waste-area">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pieces Placed</div>
+        <div class="stat-value" id="stat-placed">—</div>
+        <div class="stat-sub" id="stat-placed-sub">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Sheets Used</div>
+        <div class="stat-value" id="stat-sheet">—</div>
+        <div class="stat-sub" id="stat-sheet-sub">—</div>
+      </div>
+    </div>
+
+    <div class="pieces-result panel" id="pieces-result" style="display:none;">
+      <div class="panel-title">Piece Breakdown</div>
+      <div id="pieces-result-list"></div>
+    </div>
+
+  </div>
+
+  <!-- Right: visualization only -->
+  <div class="right-panel">
+    <div class="canvas-panel" style="position:sticky;top:0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="panel-title" style="margin-bottom:0;">Layout Visualization</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button id="toggle-labels" class="viz-btn active" title="Toggle labels">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="1" y="4" width="14" height="8" rx="1.5"/><line x1="4" y1="8" x2="12" y2="8"/></svg>
+            Labels
+          </button>
+          <button id="print-layout" class="viz-btn" title="Print layout">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5V2h8v3"/><rect x="2" y="5" width="12" height="7" rx="1"/><path d="M4 12v2h8v-2"/><circle cx="12.5" cy="8.5" r="0.8" fill="currentColor" stroke="none"/></svg>
+            Print
+          </button>
+        </div>
+      </div>
+      <div id="empty-state" class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
+          <line x1="9" y1="9" x2="9" y2="21"/>
+        </svg>
+        <p>Add pieces to see the optimal layout</p>
+      </div>
+      <canvas id="board-canvas" style="display:none;"></canvas>
+      <div class="legend-row" id="legend" style="display:none;">
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:#faf8f4;border:1px solid #ccc;position:relative;overflow:hidden;">
+            <svg width="14" height="14" style="position:absolute;inset:0;"><circle cx="3" cy="3" r="1" fill="#1f1c19" opacity=".15"/><circle cx="10" cy="10" r="1" fill="#1f1c19" opacity=".15"/><circle cx="10" cy="3" r="1" fill="#1f1c19" opacity=".15"/><circle cx="3" cy="10" r="1" fill="#1f1c19" opacity=".15"/></svg>
+          </div>
+          Waste / unused
+        </div>
+        <div class="legend-item" id="legend-rotation" style="display:none;">
+          <div class="legend-swatch" style="background:#faf8f4;border:1px dashed #c95535;"></div>
+          Rotated piece
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Shared state ──────────────────────────────────────────────────────────────
+let _recalcTimer = null;
+
+// ── Palette ───────────────────────────────────────────────────────────────────
+const COLORS = [
+  '#6c5ce7','#00b894','#e17055','#0984e3','#fdcb6e',
+  '#e84393','#00cec9','#d63031','#a29bfe','#55efc4',
+  '#fab1a0','#74b9ff','#fd79a8','#81ecec','#ffeaa7',
+];
+
+// ── Sheet management ──────────────────────────────────────────────────────────
+let sheetIdCounter = 0;
+let sheets = [];
+
+function createSheetEl(sheet) {
+  const el = document.createElement('div');
+  el.className = 'sheet-item';
+  el.dataset.id = sheet.id;
+  el.innerHTML = `
+    <div class="piece-name-row">
+      <span class="sheet-label-badge">${sheets.indexOf(sheet) + 1}</span>
+      <input class="piece-label-input sheet-label-input" type="text" value="${sheet.label}" placeholder="Sheet name">
+      <button class="btn-remove" title="Remove">✕</button>
+    </div>
+    <div class="piece-data-row">
+      <div class="piece-data-cell">
+        <span class="piece-cell-key">L</span>
+        <input type="number" inputmode="decimal" class="piece-cell-val sheet-h" value="${sheet.h}" min="1" step="0.125">
+      </div>
+      <span class="piece-dim-sep">×</span>
+      <div class="piece-data-cell">
+        <span class="piece-cell-key">W</span>
+        <input type="number" inputmode="decimal" class="piece-cell-val sheet-w" value="${sheet.w}" min="1" step="0.125">
+      </div>
+      <div class="piece-data-cell flex-grow">
+        <span class="piece-cell-key">Qty</span>
+        <input type="number" inputmode="numeric" class="piece-cell-val sheet-qty" value="${sheet.qty}" min="1" step="1" style="width:36px;">
+        <div class="qty-stepper">
+          <button class="qty-stepper-btn sheet-qty-up" tabindex="-1" aria-label="Increase">
+            <svg width="7" height="5" viewBox="0 0 7 5" fill="none"><path d="M1 4L3.5 1.5L6 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="qty-stepper-btn sheet-qty-down" tabindex="-1" aria-label="Decrease">
+            <svg width="7" height="5" viewBox="0 0 7 5" fill="none"><path d="M1 1L3.5 3.5L6 1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  el.querySelector('.sheet-label-input').addEventListener('input', e => {
+    const s = sheets.find(s => s.id === sheet.id);
+    if (s) s.label = e.target.value;
+  });
+  el.querySelector('.sheet-w').addEventListener('input', e => {
+    const s = sheets.find(s => s.id === sheet.id);
+    if (s) s.w = parseFloat(e.target.value) || 0;
+  });
+  el.querySelector('.sheet-h').addEventListener('input', e => {
+    const s = sheets.find(s => s.id === sheet.id);
+    if (s) s.h = parseFloat(e.target.value) || 0;
+  });
+  const sheetQtyInput = el.querySelector('.sheet-qty');
+  sheetQtyInput.addEventListener('input', e => {
+    const s = sheets.find(s => s.id === sheet.id);
+    if (s) s.qty = parseInt(e.target.value) || 1;
+  });
+  el.querySelector('.sheet-qty-up').addEventListener('click', () => {
+    const s = sheets.find(s => s.id === sheet.id);
+    if (s) { s.qty = (s.qty || 1) + 1; sheetQtyInput.value = s.qty; scheduleRecalculate(); }
+  });
+  el.querySelector('.sheet-qty-down').addEventListener('click', () => {
+    const s = sheets.find(s => s.id === sheet.id);
+    if (s && s.qty > 1) { s.qty -= 1; sheetQtyInput.value = s.qty; scheduleRecalculate(); }
+  });
+  el.querySelector('.btn-remove').addEventListener('click', () => {
+    sheets = sheets.filter(s => s.id !== sheet.id);
+    el.remove();
+    refreshSheetBadges();
+    scheduleRecalculate();
+  });
+
+  return el;
+}
+
+function refreshSheetBadges() {
+  document.querySelectorAll('#sheets-list .sheet-item').forEach((el, i) => {
+    const badge = el.querySelector('.sheet-label-badge');
+    if (badge) badge.textContent = i + 1;
+  });
+}
+
+function addSheet(w = 48, h = 96, label = '', qty = 1) {
+  const sheet = {
+    id: ++sheetIdCounter,
+    w, h,
+    label: label || `Sheet ${sheetIdCounter}`,
+    qty,
+  };
+  sheets.push(sheet);
+  const el = createSheetEl(sheet);
+  document.getElementById('sheets-list').appendChild(el);
+  scheduleRecalculate();
+}
+
+document.getElementById('add-sheet').addEventListener('click', () => addSheet());
+
+// Seed with one default sheet
+addSheet(48, 96, 'Sheet 1', 1);
+
+// ── Piece management ──────────────────────────────────────────────────────────
+let pieceIdCounter = 0;
+let pieces = [];
+
+function createPieceEl(piece) {
+  const el = document.createElement('div');
+  el.className = 'piece-item' + (piece.enabled ? '' : ' disabled');
+  el.dataset.id = piece.id;
+  el.innerHTML = `
+    <!-- Name row -->
+    <div class="piece-name-row">
+      <span class="piece-drag-handle" title="Drag to reorder">⠿</span>
+      <input class="piece-label-input" type="text" placeholder="Label" value="${piece.label}">
+      <div class="piece-item-actions">
+        <label class="piece-toggle" title="Enable / disable">
+          <input type="checkbox" class="piece-enabled" ${piece.enabled ? 'checked' : ''}>
+          <span class="piece-toggle-track"></span>
+        </label>
+        <button class="btn-remove" title="Remove">✕</button>
+      </div>
+    </div>
+    <!-- Data row -->
+    <div class="piece-data-row">
+      <div class="piece-data-cell">
+        <span class="piece-cell-key">L</span>
+        <input type="number" inputmode="decimal" class="piece-cell-val dim-h" value="${piece.h}" min="0.1" step="0.125">
+      </div>
+      <span class="piece-dim-sep">×</span>
+      <div class="piece-data-cell">
+        <span class="piece-cell-key">W</span>
+        <input type="number" inputmode="decimal" class="piece-cell-val dim-w" value="${piece.w}" min="0.1" step="0.125">
+      </div>
+      <div class="piece-data-cell flex-grow">
+        <span class="piece-cell-key">Qty</span>
+        <input type="number" inputmode="numeric" class="piece-cell-val dim-qty" value="${piece.qty}" min="1" step="1" style="width:36px;">
+        <div class="qty-stepper">
+          <button class="qty-stepper-btn qty-up" tabindex="-1" aria-label="Increase">
+            <svg width="7" height="5" viewBox="0 0 7 5" fill="none"><path d="M1 4L3.5 1.5L6 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="qty-stepper-btn qty-down" tabindex="-1" aria-label="Decrease">
+            <svg width="7" height="5" viewBox="0 0 7 5" fill="none"><path d="M1 1L3.5 3.5L6 1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  el.querySelector('.piece-enabled').addEventListener('change', e => {
+    const p = pieces.find(p => p.id === piece.id);
+    if (p) p.enabled = e.target.checked;
+    el.classList.toggle('disabled', !e.target.checked);
+  });
+  el.querySelector('.btn-remove').addEventListener('click', () => {
+    pieces = pieces.filter(p => p.id !== piece.id);
+    el.remove();
+    scheduleRecalculate();
+  });
+  el.querySelector('.piece-label-input').addEventListener('input', e => {
+    const p = pieces.find(p => p.id === piece.id);
+    if (p) p.label = e.target.value;
+  });
+  el.querySelector('.dim-w').addEventListener('input', e => {
+    const p = pieces.find(p => p.id === piece.id);
+    if (p) p.w = parseFloat(e.target.value) || 0;
+  });
+  el.querySelector('.dim-h').addEventListener('input', e => {
+    const p = pieces.find(p => p.id === piece.id);
+    if (p) p.h = parseFloat(e.target.value) || 0;
+  });
+  const qtyInput = el.querySelector('.dim-qty');
+  qtyInput.addEventListener('input', e => {
+    const p = pieces.find(p => p.id === piece.id);
+    if (p) p.qty = parseInt(e.target.value) || 1;
+  });
+  el.querySelector('.qty-up').addEventListener('click', () => {
+    const p = pieces.find(p => p.id === piece.id);
+    if (p) { p.qty = (p.qty || 1) + 1; qtyInput.value = p.qty; scheduleRecalculate(); }
+  });
+  el.querySelector('.qty-down').addEventListener('click', () => {
+    const p = pieces.find(p => p.id === piece.id);
+    if (p && p.qty > 1) { p.qty -= 1; qtyInput.value = p.qty; scheduleRecalculate(); }
+  });
+  return el;
+}
+
+function addPiece(w = 12, h = 12, label = '', qty = 1) {
+  const piece = {
+    id: ++pieceIdCounter,
+    w, h,
+    label: label || `Piece ${pieceIdCounter}`,
+    qty,
+    enabled: true,
+    grainDir: 'width',
+    color: COLORS[pieces.length % COLORS.length],
+  };
+  pieces.push(piece);
+  document.getElementById('pieces-list').appendChild(createPieceEl(piece));
+  scheduleRecalculate();
+}
+
+document.getElementById('add-piece').addEventListener('click', () => addPiece());
+
+// ── Drag-to-reorder pieces ────────────────────────────────────────────────────
+(function () {
+  const list = document.getElementById('pieces-list');
+  let dragging = null;
+
+  list.addEventListener('dragstart', e => {
+    const item = e.target.closest('.piece-item');
+    if (!item) return;
+    dragging = item;
+    item.style.opacity = '0.4';
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  list.addEventListener('dragend', e => {
+    const item = e.target.closest('.piece-item');
+    if (!item) return;
+    item.style.opacity = '';
+    dragging = null;
+    // Sync pieces array order to DOM order
+    const newOrder = [...list.querySelectorAll('.piece-item')].map(el => parseInt(el.dataset.id));
+    pieces.sort((a, b) => newOrder.indexOf(a.id) - newOrder.indexOf(b.id));
+    scheduleRecalculate();
+  });
+
+  list.addEventListener('dragover', e => {
+    e.preventDefault();
+    if (!dragging) return;
+    const target = e.target.closest('.piece-item');
+    if (!target || target === dragging) return;
+    const rect = target.getBoundingClientRect();
+    const after = e.clientY > rect.top + rect.height / 2;
+    list.insertBefore(dragging, after ? target.nextSibling : target);
+  });
+})();
+
+// Make piece items draggable when handle is touched
+document.getElementById('pieces-list').addEventListener('mousedown', e => {
+  const handle = e.target.closest('.piece-drag-handle');
+  if (!handle) return;
+  const item = handle.closest('.piece-item');
+  if (item) item.setAttribute('draggable', 'true');
+}, true);
+document.getElementById('pieces-list').addEventListener('dragend', e => {
+  const item = e.target.closest('.piece-item');
+  if (item) item.removeAttribute('draggable');
+}, true);
+
+addPiece(18, 12, 'Shelf', 3);
+addPiece(10, 8, 'Side Panel', 2);
+
+// ── MAXRECTS ──────────────────────────────────────────────────────────────────
+class MaxRects {
+  constructor(W, H) {
+    this.W = W; this.H = H;
+    this.free = [{ x: 0, y: 0, w: W, h: H }];
+    this.used = [];
+  }
+
+  insert(w, h, meta, normalOk = true, rotatedOk = true, scrapPref = 'none') {
+    let best = null, bestScore = Infinity, bestRot = false;
+    const score = (fw, fh, pw, ph) => {
+      if (scrapPref === 'length') return fh - ph;        // pack tight in Y → preserves long scrap at bottom
+      if (scrapPref === 'width')  return fw - pw;        // pack tight in X → preserves wide scrap on right
+      return Math.min(fw - pw, fh - ph);                 // BSSF default
+    };
+    for (const r of this.free) {
+      if (normalOk && w <= r.w && h <= r.h) {
+        const s = score(r.w, r.h, w, h);
+        if (s < bestScore) { bestScore = s; best = r; bestRot = false; }
+      }
+      if (rotatedOk && h <= r.w && w <= r.h) {
+        const s = score(r.w, r.h, h, w);
+        if (s < bestScore) { bestScore = s; best = r; bestRot = true; }
+      }
+    }
+    if (!best) return null;
+    const pw = bestRot ? h : w, ph = bestRot ? w : h;
+    const placed = { x: best.x, y: best.y, w: pw, h: ph, rotated: bestRot, ...meta };
+    this._split(placed);
+    this._prune();
+    this.used.push(placed);
+    return placed;
+  }
+
+  _intersects(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  }
+  _contains(outer, inner) {
+    return inner.x >= outer.x && inner.y >= outer.y &&
+           inner.x + inner.w <= outer.x + outer.w && inner.y + inner.h <= outer.y + outer.h;
+  }
+  _split(placed) {
+    const next = [];
+    for (const r of this.free) {
+      if (!this._intersects(r, placed)) { next.push(r); continue; }
+      if (placed.y > r.y)       next.push({ x: r.x, y: r.y, w: r.w, h: placed.y - r.y });
+      if (placed.y + placed.h < r.y + r.h) next.push({ x: r.x, y: placed.y + placed.h, w: r.w, h: r.y + r.h - (placed.y + placed.h) });
+      if (placed.x > r.x)       next.push({ x: r.x, y: r.y, w: placed.x - r.x, h: r.h });
+      if (placed.x + placed.w < r.x + r.w) next.push({ x: placed.x + placed.w, y: r.y, w: r.x + r.w - (placed.x + placed.w), h: r.h });
+    }
+    this.free = next;
+  }
+  _prune() {
+    const remove = new Set();
+    for (let i = 0; i < this.free.length; i++) {
+      if (remove.has(i)) continue;
+      for (let j = 0; j < this.free.length; j++) {
+        if (i !== j && !remove.has(j) && this._contains(this.free[j], this.free[i])) { remove.add(i); break; }
+      }
+    }
+    this.free = this.free.filter((_, i) => !remove.has(i));
+  }
+}
+
+// ── Packing ───────────────────────────────────────────────────────────────────
+function packOnSheet(W, H, items, kerf, allowRotation, scrapPref = 'none') {
+  // Sort strategies — add scrap-preference-biased sorts as extra candidates
+  const strategies = [
+    (a, b) => (b.w * b.h) - (a.w * a.h),
+    (a, b) => (b.w + b.h) - (a.w + a.h),
+    (a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h),
+    (a, b) => Math.min(b.w, b.h) - Math.min(a.w, a.h),
+    // Biased sorts: pack tall pieces first for "keep length", wide pieces first for "keep width"
+    ...(scrapPref === 'length' ? [(a, b) => b.h - a.h, (a, b) => a.w - b.w] : []),
+    ...(scrapPref === 'width'  ? [(a, b) => b.w - a.w, (a, b) => a.h - b.h] : []),
+  ];
+  let best = null, bestPlaced = -1, bestWaste = Infinity;
+  for (const cmp of strategies) {
+    const sorted = [...items].sort(cmp);
+    const packer = new MaxRects(W, H);
+    const unplaced = [];
+    for (const item of sorted) {
+      let normalOk = true, rotatedOk = true;
+      if (!allowRotation) {
+        normalOk  = item.grainDir !== 'height';
+        rotatedOk = item.grainDir !== 'width';
+      }
+      const ok = packer.insert(item.w - kerf, item.h - kerf, {
+        origW: item.w, origH: item.h,
+        label: item.label, color: item.color, pieceId: item.pieceId,
+      }, normalOk, rotatedOk, scrapPref);
+      if (!ok) unplaced.push(item);
+    }
+    const usedArea = packer.used.reduce((s, r) => s + (r.w + kerf) * (r.h + kerf), 0);
+    const waste = W * H - usedArea;
+    if (packer.used.length > bestPlaced || (packer.used.length === bestPlaced && waste < bestWaste)) {
+      bestPlaced = packer.used.length;
+      bestWaste = waste;
+      best = { packer, unplaced };
+    }
+  }
+  return best;
+}
+
+function runMultiSheetPacking(sheetInstances, items, kerf, allowRotation, scrapPref = 'none') {
+  let remaining = [...items];
+  const results = [];
+  for (const sheet of sheetInstances) {
+    if (remaining.length === 0) break;
+    const { packer, unplaced } = packOnSheet(sheet.w, sheet.h, remaining, kerf, allowRotation, scrapPref);
+    results.push({ sheet, packer });
+    remaining = unplaced;
+  }
+  return { results, unplaced: remaining };
+}
+
+// ── Draw — clean print aesthetic ──────────────────────────────────────────────
+// Theme-aware draw colors — updated by updateDrawColors()
+let INK, ACCENT, PAPER, DOT_COLOR, HIGHLIGHT_CLR, WASTE_COLOR, BORDER_COLOR;
+function updateDrawColors() {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  INK           = dark ? '#e8e4d6' : '#1f1c19';
+  ACCENT        = dark ? '#e05530' : '#c95535';
+  PAPER         = dark ? '#242018' : '#faf8f4';
+  DOT_COLOR     = dark ? 'rgba(210,90,40,0.2)'  : 'rgba(191,56,0,0.13)';
+  HIGHLIGHT_CLR = dark ? 'rgba(210,90,40,0.12)' : 'rgba(191,56,0,0.09)';
+  WASTE_COLOR   = dark ? 'rgba(200,190,160,0.06)' : 'rgba(31,28,25,0.06)';
+  BORDER_COLOR  = ACCENT;
+}
+updateDrawColors();
+
+const DOT_SP      = 7;    // dot grid spacing (px)
+const DOT_R       = 1.1;  // dot radius (px)
+// Waste: barely-visible dots
+const WASTE_SP    = 12;
+const WASTE_R     = 1.0;
+
+// Single unified border — all pieces share the same dash so overlapping edges align
+const BORDER_DASH   = [5, 4];          // 5px dash, 4px gap → 9px period
+const BORDER_PERIOD = 9;
+const BORDER_LW     = 1.3;
+const HIGHLIGHT_LW  = 7;              // soft glow band width behind the dash
+
+// Draw one edge with a highlight band + position-aligned dashed stroke
+// so dashes from adjacent pieces form a continuous grid.
+function dashedEdge(ctx, x1, y1, x2, y2, isHoriz) {
+  // Align dash phase to the global coordinate grid so touching edges share the same rhythm
+  const phase = isHoriz ? -(x1 % BORDER_PERIOD) : -(y1 % BORDER_PERIOD);
+
+  // ① Highlight band (solid, wide, very soft)
+  ctx.save();
+  ctx.strokeStyle = HIGHLIGHT_CLR;
+  ctx.lineWidth   = HIGHLIGHT_LW;
+  ctx.lineCap     = 'butt';
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  ctx.restore();
+
+  // ② Dashed line on top
+  ctx.save();
+  ctx.strokeStyle    = BORDER_COLOR;
+  ctx.lineWidth      = BORDER_LW;
+  ctx.lineCap        = 'butt';
+  ctx.setLineDash(BORDER_DASH);
+  ctx.lineDashOffset = phase;
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+function drawPieceBorder(ctx, rx, ry, rw, rh) {
+  const hw = BORDER_LW / 2;
+  // Draw each side individually so horizontal and vertical edges each get their own phase
+  dashedEdge(ctx, rx - hw, ry,      rx + rw + hw, ry,      true);  // top
+  dashedEdge(ctx, rx - hw, ry + rh, rx + rw + hw, ry + rh, true);  // bottom
+  dashedEdge(ctx, rx,      ry - hw, rx,      ry + rh + hw, false); // left
+  dashedEdge(ctx, rx + rw, ry - hw, rx + rw, ry + rh + hw, false); // right
+}
+
+function dotGrid(ctx, rx, ry, rw, rh, sp, radius, color) {
+  ctx.save();
+  ctx.beginPath(); ctx.rect(rx, ry, rw, rh); ctx.clip();
+  ctx.fillStyle = color;
+  for (let dx = sp / 2; dx < rw + sp; dx += sp) {
+    for (let dy = sp / 2; dy < rh + sp; dy += sp) {
+      ctx.beginPath();
+      ctx.arc(rx + dx, ry + dy, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+function drawSheetOnCtx(ctx, ox, oy, bw, bh, scale, sheet, used, free, kerf, unitLabel, showLabels = true) {
+  // ── Sheet background ──────────────────────────────────────────────────────────
+  ctx.fillStyle = PAPER;
+  ctx.fillRect(ox, oy, bw, bh);
+
+  // ── Waste — barely there dots ────────────────────────────────────────────────
+  for (const r of free) {
+    dotGrid(ctx,
+      ox + r.x * scale, oy + r.y * scale,
+      r.w * scale, r.h * scale,
+      WASTE_SP, WASTE_R, WASTE_COLOR);
+  }
+
+  // ── Pieces ───────────────────────────────────────────────────────────────────
+  for (const r of used) {
+    const kp = kerf * scale;
+    const rx = ox + r.x * scale + kp / 2;
+    const ry = oy + r.y * scale + kp / 2;
+    const rw = r.w * scale;
+    const rh = r.h * scale;
+
+    // ① Super-soft red dot fill
+    dotGrid(ctx, rx, ry, rw, rh, DOT_SP, DOT_R, DOT_COLOR);
+
+    // ② Rotated: extra diagonal crosshatch in accent
+    if (r.rotated) {
+      ctx.save();
+      ctx.beginPath(); ctx.rect(rx, ry, rw, rh); ctx.clip();
+      ctx.strokeStyle = 'rgba(191,56,0,0.18)';
+      ctx.lineWidth = 0.8;
+      for (let d = -rh; d < rw; d += 9) {
+        ctx.beginPath(); ctx.moveTo(rx + d, ry); ctx.lineTo(rx + d + rh, ry + rh); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // ③ Unified highlight + dashed border, globally phase-aligned
+    drawPieceBorder(ctx, rx, ry, rw, rh);
+
+    // ④ Text label — clear paper knockout box, no texture
+    const minDim = Math.min(rw, rh);
+    if (showLabels && minDim > 20) {
+      const fs     = Math.min(11, Math.max(7, minDim * 0.22));
+      const dfs    = Math.max(6, fs * 0.78);
+      const cx     = rx + rw / 2;
+      const cy     = ry + rh / 2;
+      const dimStr = r.rotated ? `${r.origW}×${r.origH} ↺` : `${r.origH}×${r.origW}`;
+      const showDim = minDim > 44;
+      const labelY = showDim ? cy - fs * 0.6 : cy;
+
+      // Measure text to draw knockout box
+      ctx.font = `700 ${fs}px 'Geist', system-ui`;
+      const labelW = ctx.measureText(r.label).width;
+      ctx.font = `500 ${dfs}px 'Geist Mono', monospace`;
+      const dimW = showDim ? ctx.measureText(dimStr).width : 0;
+      const boxW = Math.max(labelW, dimW) + 10;
+      const boxH = showDim ? fs + dfs + 8 : fs + 6;
+
+      // Clear paper box — no dots inside
+      ctx.fillStyle = PAPER;
+      ctx.fillRect(cx - boxW / 2, cy - boxH / 2, boxW, boxH);
+
+      // Label text
+      ctx.font = `700 ${fs}px 'Geist', system-ui`;
+      ctx.fillStyle = INK;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(r.label, cx, labelY);
+
+      // Dimension text
+      if (showDim) {
+        ctx.font = `500 ${dfs}px 'Geist Mono', monospace`;
+        ctx.fillStyle = ACCENT;
+        ctx.fillText(dimStr, cx, cy + fs * 0.65);
+      }
+    }
+  }
+
+  // ── Sheet border — double rule ────────────────────────────────────────────────
+  ctx.strokeStyle = INK; ctx.lineWidth = 1.5;
+  ctx.strokeRect(ox + 0.75, oy + 0.75, bw - 1.5, bh - 1.5);
+  ctx.strokeStyle = INK; ctx.lineWidth = 0.5; ctx.globalAlpha = 0.25;
+  ctx.strokeRect(ox + 4, oy + 4, bw - 8, bh - 8);
+  ctx.globalAlpha = 1;
+
+  // ── Dimension tick labels ─────────────────────────────────────────────────────
+  ctx.fillStyle = INK; ctx.font = '500 10px "Geist Mono", monospace';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillText(`W ${sheet.w} ${unitLabel}`, ox + bw / 2, oy + bh + 5);
+  ctx.save();
+  ctx.translate(ox - 8, oy + bh / 2); ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+  ctx.fillText(`L ${sheet.h} ${unitLabel}`, 0, 0);
+  ctx.restore();
+}
+
+function drawBoards(canvas, results, kerf, unitLabel, showLabels = true) {
+  const dpr      = window.devicePixelRatio || 1;
+  const displayW = canvas.parentElement.clientWidth - 40;
+  const pad = 24, labelH = 26, gap = 28;
+
+  const maxW  = Math.max(...results.map(r => r.sheet.w));
+  const scale = (displayW - pad * 2 - 20) / maxW;
+  const totalH = pad + results.reduce((s, r) => s + labelH + r.sheet.h * scale + gap, 0);
+
+  canvas.width  = displayW * dpr;
+  canvas.height = totalH   * dpr;
+  canvas.style.width  = displayW + 'px';
+  canvas.style.height = totalH   + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, displayW, totalH);
+
+  let curY = pad;
+  for (const { sheet, packer } of results) {
+    const bw = sheet.w * scale, bh = sheet.h * scale;
+    const ox = pad + (displayW - pad * 2 - bw) / 2;
+
+    // Header
+    ctx.fillStyle = INK; ctx.font = '600 11px "Geist Mono", monospace';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(sheet.label.toUpperCase(), ox, curY + labelH / 2);
+
+    const pct = (packer.used.reduce((s, r) => s + (r.w + kerf) * (r.h + kerf), 0) / (sheet.w * sheet.h) * 100).toFixed(0);
+    ctx.fillStyle = ACCENT; ctx.font = '600 11px "Geist Mono", monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(`${pct}% USED`, ox + bw, curY + labelH / 2);
+
+    // Rule
+    ctx.strokeStyle = INK; ctx.lineWidth = 0.75; ctx.globalAlpha = 0.15;
+    ctx.beginPath(); ctx.moveTo(ox, curY + labelH - 2); ctx.lineTo(ox + bw, curY + labelH - 2); ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    drawSheetOnCtx(ctx, ox, curY + labelH, bw, bh, scale, sheet, packer.used, packer.free, kerf, unitLabel, showLabels);
+    curY += labelH + bh + gap;
+  }
+}
+
+// ── Calculate (shared logic) ───────────────────────────────────────────────────
+function recalculate({ silent = false } = {}) {
+  const unitLabel   = document.getElementById('units').value;
+  const kerfEnabled = document.getElementById('kerf-enabled').checked;
+  const kerfVal     = kerfEnabled ? (parseFloat(document.getElementById('kerf-val').value) || 0) : 0;
+  const allowRotation = document.querySelector('[data-grain].active')?.dataset.grain !== 'on';
+  const scrapPref     = document.querySelector('[data-scrap].active')?.dataset.scrap ?? 'none';
+
+  const validSheets  = sheets.filter(s => s.w > 0 && s.h > 0);
+  const activePieces = pieces.filter(p => p.enabled !== false && p.w > 0 && p.h > 0);
+
+  if (validSheets.length === 0 || activePieces.length === 0) {
+    if (!silent) alert(validSheets.length === 0 ? 'Please add at least one material sheet.' : 'Please add at least one piece.');
+    return;
+  }
+
+  const sheetInstances = validSheets.flatMap(s =>
+    Array.from({ length: s.qty }, (_, i) => ({ ...s, instanceNum: i + 1, label: s.qty > 1 ? `${s.label} (${i + 1}/${s.qty})` : s.label }))
+  );
+  const expanded = activePieces.flatMap(p =>
+    Array.from({ length: p.qty }, () => ({ ...p, pieceId: p.id }))
+  );
+
+  const { results, unplaced } = runMultiSheetPacking(sheetInstances, expanded, kerfVal, allowRotation, scrapPref);
+
+  const totalMatArea   = results.reduce((s, r) => s + r.sheet.w * r.sheet.h, 0);
+  const totalUsedArea  = results.reduce((s, r) => s + r.packer.used.reduce((a, u) => a + (u.w + kerfVal) * (u.h + kerfVal), 0), 0);
+  const totalWasteArea = totalMatArea - totalUsedArea;
+  const placedCount    = results.reduce((s, r) => s + r.packer.used.length, 0);
+  const sheetsWithPieces = results.filter(r => r.packer.used.length > 0).length;
+
+  document.getElementById('stats').style.display = 'grid';
+  document.getElementById('stat-used').textContent      = ((totalUsedArea / totalMatArea) * 100).toFixed(1) + '%';
+  document.getElementById('stat-used-area').textContent = totalUsedArea.toFixed(1) + ' sq ' + unitLabel;
+  document.getElementById('stat-waste').textContent     = ((totalWasteArea / totalMatArea) * 100).toFixed(1) + '%';
+  document.getElementById('stat-waste-area').textContent= totalWasteArea.toFixed(1) + ' sq ' + unitLabel;
+  document.getElementById('stat-placed').textContent    = `${placedCount} / ${expanded.length}`;
+  document.getElementById('stat-placed-sub').textContent= unplaced.length > 0 ? `${unplaced.length} couldn't fit` : 'All placed';
+  document.getElementById('stat-sheet').textContent     = sheetsWithPieces + ' / ' + sheetInstances.length;
+  document.getElementById('stat-sheet-sub').textContent = totalMatArea.toFixed(1) + ' sq ' + unitLabel + ' total';
+
+  const canvas = document.getElementById('board-canvas');
+  document.getElementById('empty-state').style.display = 'none';
+  canvas.style.display = 'block';
+  // Store for redraw (label toggle) and print
+  canvas._lastResults   = results;
+  canvas._lastKerf      = kerfVal;
+  canvas._lastUnitLabel = unitLabel;
+  const showLabels = document.getElementById('toggle-labels').classList.contains('active');
+  drawBoards(canvas, results, kerfVal, unitLabel, showLabels);
+
+  const hasRotated = results.some(r => r.packer.used.some(u => u.rotated));
+  document.getElementById('legend').style.display = 'flex';
+  document.getElementById('legend-rotation').style.display = hasRotated ? 'flex' : 'none';
+
+  document.getElementById('pieces-result').style.display = 'block';
+  const resultList = document.getElementById('pieces-result-list');
+  resultList.innerHTML = '';
+  const allUsed = results.flatMap(r => r.packer.used);
+
+  for (const p of activePieces) {
+    const placed       = allUsed.filter(r => r.pieceId === p.id);
+    const unplacedInst = unplaced.filter(r => r.pieceId === p.id);
+    const rotatedCount = placed.filter(r => r.rotated).length;
+    const row = document.createElement('div');
+    row.className = 'piece-result-row';
+    row.innerHTML = `
+      <div class="piece-result-name">${p.label}</div>
+      <div class="piece-result-dims">${p.h} × ${p.w}</div>
+      <div class="piece-result-count">${placed.length}/${p.qty} placed</div>
+      ${rotatedCount > 0 ? `<span class="badge-rotated">${rotatedCount} rotated</span>` : ''}
+      ${unplacedInst.length > 0 ? `<span class="badge-unplaced">${unplacedInst.length} unplaced</span>` : ''}
+    `;
+    resultList.appendChild(row);
+  }
+}
+
+// Debounce for live updates
+function scheduleRecalculate() {
+  clearTimeout(_recalcTimer);
+  _recalcTimer = setTimeout(() => recalculate({ silent: true }), 300);
+}
+
+// ── Misc toggles ──────────────────────────────────────────────────────────────
+document.getElementById('kerf-enabled').addEventListener('change', e => {
+  document.getElementById('kerf-val').disabled = !e.target.checked;
+  scheduleRecalculate();
+});
+document.getElementById('kerf-val').addEventListener('input', scheduleRecalculate);
+document.getElementById('units').addEventListener('change', scheduleRecalculate);
+
+// Advanced panel toggle
+document.getElementById('advanced-toggle').addEventListener('click', () => {
+  document.getElementById('advanced-toggle').classList.toggle('open');
+  document.getElementById('advanced-body').classList.toggle('open');
+});
+
+// Grain direction pills
+document.querySelectorAll('[data-grain]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-grain]').forEach(b => b.classList.remove('active', 'accent'));
+    btn.classList.add('active');
+    const on = btn.dataset.grain === 'on';
+    document.getElementById('grain-note').style.display = on ? 'block' : 'none';
+    scheduleRecalculate();
+  });
+});
+
+// Scrap preference pills
+const SCRAP_NOTES = {
+  none:   'Pack evenly to minimize total waste.',
+  length: 'Consolidate cuts toward one end — preserves a long usable section.',
+  width:  'Consolidate cuts toward one side — preserves a wide usable section.',
+};
+document.querySelectorAll('[data-scrap]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-scrap]').forEach(b => b.classList.remove('active', 'accent'));
+    btn.classList.add('active');
+    if (btn.dataset.scrap !== 'none') btn.classList.add('accent');
+    document.getElementById('scrap-note').textContent = SCRAP_NOTES[btn.dataset.scrap];
+    scheduleRecalculate();
+  });
+});
+
+// Observe the pieces and sheets lists for any input changes
+document.getElementById('pieces-list').addEventListener('input', scheduleRecalculate);
+document.getElementById('pieces-list').addEventListener('change', scheduleRecalculate);
+document.getElementById('sheets-list').addEventListener('input', scheduleRecalculate);
+document.getElementById('sheets-list').addEventListener('change', scheduleRecalculate);
+
+// ── Theme toggle ──────────────────────────────────────────────────────────────
+(function () {
+  const root   = document.documentElement;
+  const btn    = document.getElementById('theme-toggle');
+  const saved  = localStorage.getItem('cutdoctor-theme');
+  const prefer = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  if ((saved || prefer) === 'dark') root.dataset.theme = 'dark';
+
+  btn.addEventListener('click', () => {
+    const isDark = root.dataset.theme === 'dark';
+    root.dataset.theme = isDark ? 'light' : 'dark';
+    localStorage.setItem('cutdoctor-theme', root.dataset.theme);
+    updateDrawColors();
+    // Redraw canvas with new colours if results exist
+    const canvas = document.getElementById('board-canvas');
+    if (canvas._lastResults) {
+      const showLabels = document.getElementById('toggle-labels').classList.contains('active');
+      drawBoards(canvas, canvas._lastResults, canvas._lastKerf, canvas._lastUnitLabel, showLabels);
+    }
+  });
+})();
+
+// ── Label toggle ───────────────────────────────────────────────────────────────
+document.getElementById('toggle-labels').addEventListener('click', () => {
+  const btn = document.getElementById('toggle-labels');
+  btn.classList.toggle('active');
+  const canvas = document.getElementById('board-canvas');
+  if (canvas._lastResults) {
+    const showLabels = btn.classList.contains('active');
+    drawBoards(canvas, canvas._lastResults, canvas._lastKerf, canvas._lastUnitLabel, showLabels);
+  }
+});
+
+// ── Print layout ───────────────────────────────────────────────────────────────
+document.getElementById('print-layout').addEventListener('click', () => {
+  const canvas = document.getElementById('board-canvas');
+  if (!canvas._lastResults) return;
+
+  const results   = canvas._lastResults;
+  const kerfVal   = canvas._lastKerf;
+  const unitLabel = canvas._lastUnitLabel;
+
+  // Render a dedicated print canvas at a fixed 700px wide, sized to fit one page.
+  // Target: leave ~260px for header + cut list, so viz gets ~580px max height.
+  const PRINT_W     = 700;
+  const PRINT_MAX_H = 560; // px available for all sheets in the viz
+  const pad = 16, labelH = 22, gap = 18;
+  const maxSheetW = Math.max(...results.map(r => r.sheet.w));
+  const usableW   = PRINT_W - pad * 2 - 20;
+
+  // First pass: find scale that makes total height ≤ PRINT_MAX_H
+  let scale = usableW / maxSheetW;
+  let totalH = pad + results.reduce((s, r) => s + labelH + r.sheet.h * scale + gap, 0);
+  if (totalH > PRINT_MAX_H) {
+    scale = scale * (PRINT_MAX_H / totalH);
+    totalH = pad + results.reduce((s, r) => s + labelH + r.sheet.h * scale + gap, 0);
+  }
+
+  const printCanvas = document.createElement('canvas');
+  const dpr = 2; // retina for crisp print
+  printCanvas.width  = PRINT_W * dpr;
+  printCanvas.height = totalH  * dpr;
+  printCanvas.style.width  = PRINT_W + 'px';
+  printCanvas.style.height = totalH  + 'px';
+
+  const pctx = printCanvas.getContext('2d');
+  pctx.scale(dpr, dpr);
+  pctx.clearRect(0, 0, PRINT_W, totalH);
+
+  // Temporarily swap the canvas parent so drawBoards uses print width
+  const fakeParent = { clientWidth: PRINT_W + 40 };
+  const origParent = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'parentElement');
+
+  // Manually replicate drawBoards at print scale instead of calling it
+  let curY = pad;
+  for (const { sheet, packer } of results) {
+    const bw = sheet.w * scale, bh = sheet.h * scale;
+    const ox = pad + (PRINT_W - pad * 2 - bw) / 2;
+    pctx.fillStyle = '#1f1c19'; pctx.font = '600 9px "Geist Mono", monospace';
+    pctx.textAlign = 'left'; pctx.textBaseline = 'middle';
+    pctx.fillText(sheet.label.toUpperCase(), ox, curY + labelH / 2);
+    const pct = (packer.used.reduce((s, r) => s + (r.w + kerfVal) * (r.h + kerfVal), 0) / (sheet.w * sheet.h) * 100).toFixed(0);
+    pctx.fillStyle = '#c95535'; pctx.font = '600 9px "Geist Mono", monospace';
+    pctx.textAlign = 'right';
+    pctx.fillText(`${pct}% USED`, ox + bw, curY + labelH / 2);
+    pctx.strokeStyle = '#1f1c19'; pctx.lineWidth = 0.75; pctx.globalAlpha = 0.15;
+    pctx.beginPath(); pctx.moveTo(ox, curY + labelH - 2); pctx.lineTo(ox + bw, curY + labelH - 2); pctx.stroke();
+    pctx.globalAlpha = 1;
+    drawSheetOnCtx(pctx, ox, curY + labelH, bw, bh, scale, sheet, packer.used, packer.free, kerfVal, unitLabel, true);
+    curY += labelH + bh + gap;
+  }
+
+  const imgData = printCanvas.toDataURL('image/png');
+
+  // Build cut list rows
+  const activePieces = pieces.filter(p => p.enabled !== false && p.w > 0 && p.h > 0);
+  const allUsed = results.flatMap(r => r.packer.used);
+  const cutListRows = activePieces.map(p => {
+    const placed = allUsed.filter(r => r.pieceId === p.id).length;
+    return `<tr>
+      <td>${p.label || '—'}</td>
+      <td>${p.h} × ${p.w} ${unitLabel}</td>
+      <td>${p.qty}</td>
+      <td>${placed} / ${p.qty}</td>
+    </tr>`;
+  }).join('');
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>Cut Layout — The Cut Doctor</title>
+  <style>
+    @page { size: letter portrait; margin: 0.6in; }
+    @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600&family=Geist+Mono:wght@400;500&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Geist', system-ui, sans-serif; color: #1f1c19; background: white; }
+    .header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid #1f1c19; padding-bottom: 8px; margin-bottom: 16px; }
+    h1 { font-size: 1rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+    .sub { font-family: 'Geist Mono', monospace; font-size: 0.65rem; color: #7a7268; letter-spacing: 0.08em; text-transform: uppercase; }
+    .viz { margin-bottom: 20px; page-break-inside: avoid; }
+    .viz img { width: 100%; display: block; border: 1px solid #e2ddd5; }
+    h2 { font-family: 'Geist Mono', monospace; font-size: 0.6rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; color: #7a7268; margin-bottom: 8px; page-break-after: avoid; }
+    table { width: 100%; border-collapse: collapse; page-break-inside: avoid; }
+    thead tr { border-bottom: 1.5px solid #1f1c19; }
+    th { font-family: 'Geist Mono', monospace; font-size: 0.58rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: #7a7268; padding: 0 10px 6px 0; text-align: left; }
+    td { padding: 6px 10px 6px 0; border-bottom: 1px solid #e2ddd5; font-size: 0.78rem; }
+    td:nth-child(2) { font-family: 'Geist Mono', monospace; font-size: 0.72rem; }
+    td:nth-child(3), td:nth-child(4) { font-family: 'Geist Mono', monospace; font-size: 0.72rem; color: #7a7268; }
+  </style></head><body>
+  <div class="header">
+    <h1>The Cut Doctor — Cut Layout</h1>
+    <span class="sub">${new Date().toLocaleDateString()}</span>
+  </div>
+  <div class="viz"><img src="${imgData}"></div>
+  <h2>Cut List</h2>
+  <table>
+    <thead><tr><th>Piece</th><th>Dimensions</th><th>Qty</th><th>Placed</th></tr></thead>
+    <tbody>${cutListRows}</tbody>
+  </table>
+  <script>window.onload = () => { window.print(); }<\/script>
+  </body></html>`);
+  win.document.close();
+});
+</script>
+</body>
+</html>
