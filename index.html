@@ -791,6 +791,7 @@ header .logo-mark {
 [data-theme="dark"] .viz-btn.active { background: var(--text); color: var(--dark); border-color: var(--text); }
 
 [data-theme="dark"] .legend-swatch { border-color: var(--border) !important; }
+[data-theme="dark"] .canvas-panel { background: #1c1a15; }
 [data-theme="dark"] .canvas-panel canvas { background: #1c1a15; }
 
 /* Theme toggle button in header */
@@ -1807,7 +1808,7 @@ document.getElementById('sheets-list').addEventListener('change', scheduleRecalc
   const btn    = document.getElementById('theme-toggle');
   const saved  = localStorage.getItem('cutdoctor-theme');
   const prefer = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  if ((saved || prefer) === 'dark') root.dataset.theme = 'dark';
+  if ((saved || prefer) === 'dark') { root.dataset.theme = 'dark'; updateDrawColors(); }
 
   btn.addEventListener('click', () => {
     const isDark = root.dataset.theme === 'dark';
