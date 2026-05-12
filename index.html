@@ -725,6 +725,11 @@ header .logo-mark {
   line-height: 1.5;
   margin-top: 2px;
 }
+.advanced-row-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
 /* ── Dark mode ───────────────────────────────────────────────────────────────── */
 [data-theme="dark"] {
@@ -986,9 +991,20 @@ header .logo-mark {
             <button class="option-pill active" data-scrap="none">Balanced</button>
             <button class="option-pill" data-scrap="length">Keep length</button>
             <button class="option-pill" data-scrap="width">Keep width</button>
-            <button class="option-pill" data-scrap="cuts">Fewer cuts</button>
           </div>
           <div class="advanced-note" id="scrap-note">Pack evenly to minimize total waste.</div>
+        </div>
+
+        <!-- Fewer cuts -->
+        <div class="advanced-row">
+          <div class="advanced-row-inline">
+            <div class="advanced-row-label">Fewer cuts</div>
+            <label class="piece-toggle" title="Optimize for fewer rip and cross cuts">
+              <input type="checkbox" id="fewer-cuts-toggle">
+              <span class="piece-toggle-track"></span>
+            </label>
+          </div>
+          <div class="advanced-note">Group pieces by shared dimensions — minimizes total rip and cross cuts.</div>
         </div>
 
       </div>
@@ -1431,7 +1447,7 @@ function countCuts(used, W, H, kerf) {
 }
 
 // ── Packing ───────────────────────────────────────────────────────────────────
-function packOnSheet(W, H, items, kerf, allowRotation, scrapPref = 'none') {
+function packOnSheet(W, H, items, kerf, allowRotation, scrapPref = 'none', fewerCuts = false) {
   // Sort orders that group pieces sharing a dimension together → shared cut lines
   const cutsSortOrders = [
     // Group by width (same rip-cut positions), then tallest-first within group
@@ -1448,7 +1464,7 @@ function packOnSheet(W, H, items, kerf, allowRotation, scrapPref = 'none') {
     (a, b) => a.h !== b.h ? a.h - b.h : (b.w * b.h) - (a.w * a.h),
   ];
 
-  const sortOrders = scrapPref === 'cuts' ? cutsSortOrders : [
+  const sortOrders = fewerCuts ? cutsSortOrders : [
     (a, b) => (b.w * b.h) - (a.w * a.h),           // area desc
     (a, b) => (b.w + b.h) - (a.w + a.h),            // perimeter desc
     (a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h), // max dim desc
@@ -1462,12 +1478,12 @@ function packOnSheet(W, H, items, kerf, allowRotation, scrapPref = 'none') {
     ...(scrapPref === 'width'  ? [(a, b) => b.w - a.w, (a, b) => a.h - b.h] : []),
   ];
   // Three placement scoring modes — each favours different packing shapes
-  const scoreModes = scrapPref !== 'none' ? ['bssf'] : ['bssf', 'baf', 'blsf'];
+  const scoreModes = (scrapPref !== 'none' || fewerCuts) ? ['bssf'] : ['bssf', 'baf', 'blsf'];
 
   let best = null, bestPlaced = -1, bestCuts = Infinity, bestCompact = Infinity, bestWaste = Infinity;
 
   // For "fewer cuts" we try both rotation-locked (preserves width groups) and free rotation
-  const rotationVariants = scrapPref === 'cuts' ? [false, allowRotation] : [allowRotation];
+  const rotationVariants = fewerCuts ? [false, allowRotation] : [allowRotation];
 
   for (const rotOpt of rotationVariants) {
     for (const cmp of sortOrders) {
@@ -1484,7 +1500,7 @@ function packOnSheet(W, H, items, kerf, allowRotation, scrapPref = 'none') {
           const ok = packer.insert(item.w - kerf, item.h - kerf, {
             origW: item.w, origH: item.h,
             label: item.label, color: item.color, pieceId: item.pieceId,
-          }, normalOk, rotatedOk, scrapPref === 'cuts' ? 'none' : scrapPref, mode);
+          }, normalOk, rotatedOk, scrapPref, mode);
           if (!ok) unplaced.push(item);
         }
         // Compactness: bounding box area of all placed pieces (smaller = more clustered)
@@ -1493,10 +1509,10 @@ function packOnSheet(W, H, items, kerf, allowRotation, scrapPref = 'none') {
           Math.max(...packer.used.map(r => r.y + r.h));
         const usedArea = packer.used.reduce((s, r) => s + (r.w + kerf) * (r.h + kerf), 0);
         const waste = W * H - usedArea;
-        const cuts = scrapPref === 'cuts' ? countCuts(packer.used, W, H, kerf) : 0;
+        const cuts = fewerCuts ? countCuts(packer.used, W, H, kerf) : 0;
 
         let better;
-        if (scrapPref === 'cuts') {
+        if (fewerCuts) {
           better = packer.used.length > bestPlaced ||
             (packer.used.length === bestPlaced && cuts < bestCuts) ||
             (packer.used.length === bestPlaced && cuts === bestCuts && compact < bestCompact) ||
@@ -1520,12 +1536,12 @@ function packOnSheet(W, H, items, kerf, allowRotation, scrapPref = 'none') {
   return best;
 }
 
-function runMultiSheetPacking(sheetInstances, items, kerf, allowRotation, scrapPref = 'none') {
+function runMultiSheetPacking(sheetInstances, items, kerf, allowRotation, scrapPref = 'none', fewerCuts = false) {
   let remaining = [...items];
   const results = [];
   for (const sheet of sheetInstances) {
     if (remaining.length === 0) break;
-    const { packer, unplaced } = packOnSheet(sheet.w, sheet.h, remaining, kerf, allowRotation, scrapPref);
+    const { packer, unplaced } = packOnSheet(sheet.w, sheet.h, remaining, kerf, allowRotation, scrapPref, fewerCuts);
     results.push({ sheet, packer });
     remaining = unplaced;
   }
@@ -1755,6 +1771,7 @@ function recalculate({ silent = false } = {}) {
   const kerfVal     = kerfEnabled ? (parseFloat(document.getElementById('kerf-val').value) || 0) : 0;
   const allowRotation = document.querySelector('[data-grain].active')?.dataset.grain !== 'on';
   const scrapPref     = document.querySelector('[data-scrap].active')?.dataset.scrap ?? 'none';
+  const fewerCuts     = document.getElementById('fewer-cuts-toggle').checked;
 
   const validSheets  = sheets.filter(s => s.w > 0 && s.h > 0);
   const activePieces = pieces.filter(p => p.enabled !== false && p.w > 0 && p.h > 0);
@@ -1771,7 +1788,7 @@ function recalculate({ silent = false } = {}) {
     Array.from({ length: p.qty }, () => ({ ...p, pieceId: p.id }))
   );
 
-  const { results, unplaced } = runMultiSheetPacking(sheetInstances, expanded, kerfVal, allowRotation, scrapPref);
+  const { results, unplaced } = runMultiSheetPacking(sheetInstances, expanded, kerfVal, allowRotation, scrapPref, fewerCuts);
 
   const totalMatArea   = results.reduce((s, r) => s + r.sheet.w * r.sheet.h, 0);
   const totalUsedArea  = results.reduce((s, r) => s + r.packer.used.reduce((a, u) => a + (u.w + kerfVal) * (u.h + kerfVal), 0), 0);
@@ -1861,7 +1878,6 @@ const SCRAP_NOTES = {
   none:   'Pack evenly to minimize total waste.',
   length: 'Consolidate cuts toward one end — preserves a long usable section.',
   width:  'Consolidate cuts toward one side — preserves a wide usable section.',
-  cuts:   'Group pieces by shared dimensions — minimizes total rip and cross cuts.',
 };
 document.querySelectorAll('[data-scrap]').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1872,6 +1888,9 @@ document.querySelectorAll('[data-scrap]').forEach(btn => {
     scheduleRecalculate();
   });
 });
+
+// Fewer cuts toggle
+document.getElementById('fewer-cuts-toggle').addEventListener('change', scheduleRecalculate);
 
 // Observe the pieces and sheets lists for any input changes
 document.getElementById('pieces-list').addEventListener('input', scheduleRecalculate);
