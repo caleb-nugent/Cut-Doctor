@@ -788,6 +788,7 @@ header .logo-mark {
 [data-theme="dark"] .viz-btn.active { background: var(--text); color: var(--dark); border-color: var(--text); }
 
 [data-theme="dark"] .legend-swatch { border-color: var(--border) !important; }
+[data-theme="dark"] .canvas-panel canvas { background: #1c1a15; }
 
 /* Theme toggle button in header */
 .theme-toggle {
@@ -1639,7 +1640,8 @@ function drawBoards(canvas, results, kerf, unitLabel, showLabels = true) {
 
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
-  ctx.clearRect(0, 0, displayW, totalH);
+  ctx.fillStyle = PAPER;
+  ctx.fillRect(0, 0, displayW, totalH);
 
   let curY = pad;
   for (const { sheet, packer } of results) {
