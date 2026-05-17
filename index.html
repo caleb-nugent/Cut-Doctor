@@ -731,6 +731,194 @@ header .logo-mark {
   justify-content: space-between;
 }
 
+/* ── Import modal ────────────────────────────────────────────────────────────── */
+.import-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(31,28,25,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+.import-modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.import-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.import-modal-title {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text);
+}
+.import-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 2px;
+  line-height: 1;
+  font-size: 1.2rem;
+  transition: color 0.15s;
+}
+.import-modal-close:hover { color: var(--text); }
+.import-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.import-units-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.import-units-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.import-body-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.import-body-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  background: #faf9f6;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.import-body-row:hover { background: var(--primary-l); }
+.import-body-row.checked { background: var(--primary-l); border-color: rgba(191,56,0,0.3); }
+.import-body-cb { flex-shrink: 0; accent-color: var(--primary); width: 14px; height: 14px; cursor: pointer; }
+.import-body-name {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.import-body-dims {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.import-body-thin {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--muted);
+  opacity: 0.65;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.import-empty {
+  text-align: center;
+  padding: 24px 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.import-modal-footer {
+  padding: 12px 18px 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.import-select-all {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+.import-select-all:hover { color: var(--text); }
+.import-add-btn {
+  margin-left: auto;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 8px 18px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.import-add-btn:hover { background: var(--primary-h); }
+.import-add-btn:disabled { opacity: 0.4; cursor: default; }
+.import-note {
+  font-size: 0.7rem;
+  color: var(--muted);
+  line-height: 1.5;
+  background: #faf9f6;
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+}
+.import-note a { color: var(--primary); text-decoration: none; }
+.import-note a:hover { text-decoration: underline; }
+.btn-import-shapr {
+  width: 100%;
+  padding: 8px;
+  background: none;
+  border: 1px dashed #c8c0b6;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #b0a898;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn-import-shapr:hover { border-color: var(--primary); color: var(--primary); }
+
 /* ── Dark mode ───────────────────────────────────────────────────────────────── */
 [data-theme="dark"] {
   --bg:       #1c1a15;
@@ -798,6 +986,14 @@ header .logo-mark {
 [data-theme="dark"] .legend-swatch { border-color: var(--border) !important; }
 [data-theme="dark"] .canvas-panel { background: #1c1a15; }
 [data-theme="dark"] .canvas-panel canvas { background: #1c1a15; }
+
+[data-theme="dark"] .import-modal { background: #242018; }
+[data-theme="dark"] .import-body-row { background: #2c2820; }
+[data-theme="dark"] .import-body-row:hover,
+[data-theme="dark"] .import-body-row.checked { background: #3a1800; border-color: rgba(217,74,0,0.3); }
+[data-theme="dark"] .import-note { background: #2c2820; }
+[data-theme="dark"] .btn-import-shapr { border-color: #38332a; color: #5a5248; }
+[data-theme="dark"] .btn-import-shapr:hover { border-color: var(--primary); color: var(--primary); }
 
 /* Theme toggle button in header */
 .theme-toggle {
@@ -1022,6 +1218,12 @@ header .logo-mark {
         Add piece
       </button>
 
+      <button class="btn-import-shapr" id="import-shapr-btn">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/><polyline points="4,6 8,2 12,6"/><line x1="8" y1="2" x2="8" y2="11"/></svg>
+        Import from Shapr3D
+      </button>
+      <input type="file" id="shapr-file-input" accept=".glb,.obj" style="display:none">
+
     </div>
 
     <div class="stats-grid" id="stats" style="display:none;">
@@ -1091,6 +1293,37 @@ header .logo-mark {
           Rotated piece
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Shapr3D Import Modal -->
+<div id="import-modal" class="import-backdrop" style="display:none">
+  <div class="import-modal">
+    <div class="import-modal-header">
+      <span class="import-modal-title">Import from Shapr3D</span>
+      <button class="import-modal-close" id="import-modal-close" title="Close">&#x2715;</button>
+    </div>
+    <div class="import-modal-body">
+      <div class="import-note">
+        Export your model from Shapr3D as <strong>GLB</strong> (Visualization export). Each body's name and dimensions will be detected automatically. Dimensions shown are L × W — thickness (T) is the smallest axis and is excluded from the cut layout.
+      </div>
+      <div class="import-units-row">
+        <span class="import-units-label">Display units</span>
+        <div class="option-pills" style="flex:none">
+          <select id="import-unit-sel" style="font-family:var(--font-mono);font-size:0.7rem;background:transparent;border:none;color:var(--text);cursor:pointer;outline:none;padding:4px 6px;">
+            <option value="mm">mm</option>
+            <option value="in">in</option>
+            <option value="cm">cm</option>
+            <option value="ft">ft</option>
+          </select>
+        </div>
+      </div>
+      <div id="import-body-list" class="import-body-list"></div>
+    </div>
+    <div class="import-modal-footer">
+      <button class="import-select-all" id="import-select-all">Select all / none</button>
+      <button class="import-add-btn" id="import-add-btn" disabled>Add pieces</button>
     </div>
   </div>
 </div>
@@ -2036,6 +2269,357 @@ document.getElementById('print-layout').addEventListener('click', () => {
   <script>window.onload = () => { window.print(); }<\/script>
   </body></html>`);
   win.document.close();
+});
+
+// ── Shapr3D Import ────────────────────────────────────────────────────────────
+
+// ── GLB parser (vanilla JS, no dependencies) ──────────────────────────────────
+// glTF 2.0 spec: all linear units are meters. Accessor min/max are local-space
+// AABB corners. We apply each node's world transform to get true world dims.
+
+function mat4Identity() {
+  return [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
+}
+
+function mat4FromTRS(t, r, s) {
+  // Build a 4×4 column-major matrix from TRS
+  t = t || [0,0,0];
+  r = r || [0,0,0,0,1]; // identity quaternion
+  s = s || [1,1,1];
+  const [qx,qy,qz,qw] = r;
+  const [sx,sy,sz] = s;
+  const x2=qx+qx, y2=qy+qy, z2=qz+qz;
+  const xx=qx*x2, xy=qx*y2, xz=qx*z2;
+  const yy=qy*y2, yz=qy*z2, zz=qz*z2;
+  const wx=qw*x2, wy=qw*y2, wz=qw*z2;
+  return [
+    (1-(yy+zz))*sx, (xy+wz)*sx,     (xz-wy)*sx,     0,
+    (xy-wz)*sy,     (1-(xx+zz))*sy, (yz+wx)*sy,     0,
+    (xz+wy)*sz,     (yz-wx)*sz,     (1-(xx+yy))*sz, 0,
+    t[0], t[1], t[2], 1
+  ];
+}
+
+function mat4Mul(a, b) {
+  const r = new Array(16);
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 4; j++) {
+      r[j*4+i] = a[i]*b[j*4]+a[4+i]*b[j*4+1]+a[8+i]*b[j*4+2]+a[12+i]*b[j*4+3];
+    }
+  }
+  return r;
+}
+
+function mat4TransformPoint(m, p) {
+  const w = m[3]*p[0]+m[7]*p[1]+m[11]*p[2]+m[15] || 1;
+  return [
+    (m[0]*p[0]+m[4]*p[1]+m[8]*p[2]+m[12]) / w,
+    (m[1]*p[0]+m[5]*p[1]+m[9]*p[2]+m[13]) / w,
+    (m[2]*p[0]+m[6]*p[1]+m[10]*p[2]+m[14]) / w,
+  ];
+}
+
+function getNodeWorldMatrices(gltf) {
+  const n = (gltf.nodes || []).length;
+  const local = gltf.nodes.map(node => {
+    if (node.matrix) return node.matrix;
+    return mat4FromTRS(node.translation, node.rotation, node.scale);
+  });
+  const world = local.map(() => null);
+  // Build parent lookup
+  const parent = new Array(n).fill(-1);
+  for (const node of gltf.nodes) {
+    for (const ci of (node.children || [])) parent[ci] = gltf.nodes.indexOf(node);
+  }
+  function resolve(i) {
+    if (world[i]) return world[i];
+    if (parent[i] === -1) { world[i] = local[i]; return world[i]; }
+    world[i] = mat4Mul(resolve(parent[i]), local[i]);
+    return world[i];
+  }
+  for (let i = 0; i < n; i++) resolve(i);
+  return world;
+}
+
+function aabbCornersTransformed(min, max, mat) {
+  const corners = [];
+  for (const x of [min[0],max[0]])
+    for (const y of [min[1],max[1]])
+      for (const z of [min[2],max[2]])
+        corners.push(mat4TransformPoint(mat, [x,y,z]));
+  return corners;
+}
+
+function parseGLB(buffer) {
+  const view = new DataView(buffer);
+  const magic = view.getUint32(0, true);
+  if (magic !== 0x46546C67) throw new Error('Not a valid GLB file.');
+  const version = view.getUint32(4, true);
+  if (version !== 2) throw new Error(`Unsupported GLB version: ${version}`);
+
+  // First chunk must be JSON
+  const jsonLen  = view.getUint32(12, true);
+  const jsonType = view.getUint32(16, true);
+  if (jsonType !== 0x4E4F534A) throw new Error('GLB first chunk is not JSON.');
+  const jsonText = new TextDecoder().decode(new Uint8Array(buffer, 20, jsonLen));
+  const gltf = JSON.parse(jsonText);
+
+  const worldMats = getNodeWorldMatrices(gltf);
+  const bodies = [];
+
+  for (let ni = 0; ni < (gltf.nodes || []).length; ni++) {
+    const node = gltf.nodes[ni];
+    if (node.mesh === undefined) continue;
+
+    const mesh = gltf.meshes[node.mesh];
+    if (!mesh) continue;
+
+    let minW=[Infinity,Infinity,Infinity], maxW=[-Infinity,-Infinity,-Infinity];
+    let hasGeom = false;
+
+    for (const prim of (mesh.primitives || [])) {
+      const posIdx = prim.attributes?.POSITION;
+      if (posIdx === undefined) continue;
+      const acc = gltf.accessors[posIdx];
+      if (!acc?.min || !acc?.max) continue;
+      hasGeom = true;
+      const corners = aabbCornersTransformed(acc.min, acc.max, worldMats[ni]);
+      for (const c of corners) {
+        minW = [Math.min(minW[0],c[0]), Math.min(minW[1],c[1]), Math.min(minW[2],c[2])];
+        maxW = [Math.max(maxW[0],c[0]), Math.max(maxW[1],c[1]), Math.max(maxW[2],c[2])];
+      }
+    }
+
+    if (!hasGeom) continue;
+
+    // glTF units are meters → convert to mm, then sort dims desc [L, W, T]
+    const dims = [
+      (maxW[0]-minW[0])*1000,
+      (maxW[1]-minW[1])*1000,
+      (maxW[2]-minW[2])*1000,
+    ].sort((a,b) => b-a);
+
+    // Skip degenerate (zero-size) nodes
+    if (dims[0] < 0.01) continue;
+
+    bodies.push({ name: node.name || mesh.name || `Body ${ni+1}`, dims });
+  }
+
+  return bodies;
+}
+
+// OBJ fallback — each named object becomes one body (user exports each body separately)
+function parseOBJ(text) {
+  const bodies = [];
+  let cur = null;
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    const parts = line.split(/\s+/);
+    if (parts[0] === 'o' || parts[0] === 'g') {
+      const name = parts.slice(1).join(' ') || `Body ${bodies.length+1}`;
+      if (name === 'default' && cur && cur.vertices === 0) continue;
+      cur = { name, min:[Infinity,Infinity,Infinity], max:[-Infinity,-Infinity,-Infinity], vertices:0 };
+      bodies.push(cur);
+    } else if (parts[0] === 'v' && cur) {
+      const x=parseFloat(parts[1]),y=parseFloat(parts[2]),z=parseFloat(parts[3]);
+      if (isNaN(x)||isNaN(y)||isNaN(z)) continue;
+      cur.min = [Math.min(cur.min[0],x),Math.min(cur.min[1],y),Math.min(cur.min[2],z)];
+      cur.max = [Math.max(cur.max[0],x),Math.max(cur.max[1],y),Math.max(cur.max[2],z)];
+      cur.vertices++;
+    } else if (parts[0] === 'v' && !cur) {
+      // vertices before any named group — create a default body
+      cur = { name: 'Unnamed Body', min:[Infinity,Infinity,Infinity], max:[-Infinity,-Infinity,-Infinity], vertices:0 };
+      bodies.push(cur);
+      const x=parseFloat(parts[1]),y=parseFloat(parts[2]),z=parseFloat(parts[3]);
+      if (!isNaN(x)&&!isNaN(y)&&!isNaN(z)) {
+        cur.min = [Math.min(cur.min[0],x),Math.min(cur.min[1],y),Math.min(cur.min[2],z)];
+        cur.max = [Math.max(cur.max[0],x),Math.max(cur.max[1],y),Math.max(cur.max[2],z)];
+        cur.vertices++;
+      }
+    }
+  }
+  return bodies
+    .filter(b => b.vertices > 0 && b.min[0] !== Infinity)
+    .map(b => ({
+      name: b.name,
+      dims: [b.max[0]-b.min[0],b.max[1]-b.min[1],b.max[2]-b.min[2]].sort((a,c)=>c-a)
+    }))
+    .filter(b => b.dims[0] > 0.001);
+}
+
+// ── Import modal UI ───────────────────────────────────────────────────────────
+let _importBodies  = [];
+let _importFileType = 'glb'; // 'glb' | 'obj'
+
+function formatDim(mm, toUnit) {
+  if (toUnit === 'in') return (mm / 25.4).toFixed(3).replace(/\.?0+$/, '');
+  if (toUnit === 'ft') return (mm / 304.8).toFixed(3).replace(/\.?0+$/, '');
+  return mm.toFixed(1);
+}
+
+function openImportModal(bodies, fileType) {
+  _importBodies  = bodies;
+  _importFileType = fileType;
+  const modal = document.getElementById('import-modal');
+  const appUnit = document.getElementById('units').value; // in / mm / ft
+
+  // Determine default display unit based on file type and app unit
+  // GLB is always meters (→ mm internally). OBJ may be in any unit.
+  let defaultUnit = fileType === 'glb' ? (appUnit === 'in' ? 'in' : 'mm') : appUnit;
+
+  renderImportModal(bodies, defaultUnit, appUnit);
+  modal.style.display = 'flex';
+}
+
+function renderImportModal(bodies, displayUnit, appUnit) {
+  const modal = document.getElementById('import-modal');
+
+  // Unit selector
+  const unitSel = modal.querySelector('#import-unit-sel');
+  unitSel.value = displayUnit;
+
+  // Body list
+  const list = modal.querySelector('#import-body-list');
+  list.innerHTML = '';
+
+  if (bodies.length === 0) {
+    list.innerHTML = '<div class="import-empty">No named bodies found in this file.<br>Try exporting each body separately from Shapr3D.</div>';
+    modal.querySelector('#import-add-btn').disabled = true;
+    return;
+  }
+
+  for (let i = 0; i < bodies.length; i++) {
+    const b = bodies[i];
+    // dims are in mm (GLB) or raw units (OBJ)
+    const [d0, d1, d2] = b.dims;
+    const L = formatDim(d0, displayUnit);
+    const W = formatDim(d1, displayUnit);
+    const T = formatDim(d2, displayUnit);
+    const unitLabel = displayUnit;
+
+    const row = document.createElement('label');
+    row.className = 'import-body-row';
+    row.setAttribute('for', `import-cb-${i}`);
+    row.innerHTML = `
+      <input class="import-body-cb" type="checkbox" id="import-cb-${i}" data-idx="${i}" checked>
+      <span class="import-body-name" title="${b.name}">${b.name}</span>
+      <span class="import-body-dims">${L} × ${W} ${unitLabel}</span>
+      <span class="import-body-thin">T:${T}</span>
+    `;
+    row.addEventListener('change', () => {
+      row.classList.toggle('checked', row.querySelector('input').checked);
+      updateImportAddBtn();
+    });
+    if (true) row.classList.add('checked'); // all checked by default
+    list.appendChild(row);
+  }
+  updateImportAddBtn();
+}
+
+function updateImportAddBtn() {
+  const checked = document.querySelectorAll('#import-body-list .import-body-cb:checked').length;
+  const btn = document.getElementById('import-add-btn');
+  btn.disabled = checked === 0;
+  btn.textContent = checked === 0 ? 'Add pieces' : `Add ${checked} piece${checked!==1?'s':''}`;
+}
+
+function closeImportModal() {
+  document.getElementById('import-modal').style.display = 'none';
+  _importBodies = [];
+}
+
+function commitImport() {
+  const displayUnit = document.getElementById('import-unit-sel').value;
+  const appUnit = document.getElementById('units').value;
+
+  const checked = [...document.querySelectorAll('#import-body-list .import-body-cb:checked')];
+  for (const cb of checked) {
+    const idx = parseInt(cb.dataset.idx);
+    const b = _importBodies[idx];
+    let [d0, d1] = b.dims; // d0=L, d1=W (already mm for GLB, raw for OBJ)
+
+    // Convert display unit → app unit
+    // For GLB: dims are in mm. For OBJ: dims are in whatever displayUnit is.
+    // We need to produce values in appUnit.
+    const toMM = u => ({ 'mm':1, 'in':25.4, 'ft':304.8, 'cm':10, 'm':1000 }[u] || 1);
+    const dimMM_L = _importFileType === 'glb' ? d0 : d0 * toMM(displayUnit);
+    const dimMM_W = _importFileType === 'glb' ? d1 : d1 * toMM(displayUnit);
+
+    const fromMM = u => 1 / toMM(u);
+    const L = +(dimMM_L * fromMM(appUnit)).toFixed(4);
+    const W = +(dimMM_W * fromMM(appUnit)).toFixed(4);
+
+    addPiece(L, W, b.name, 1);
+  }
+
+  closeImportModal();
+  scheduleRecalculate();
+}
+
+// Wire up the import button + file input
+document.getElementById('import-shapr-btn').addEventListener('click', () => {
+  document.getElementById('shapr-file-input').click();
+});
+
+document.getElementById('shapr-file-input').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = ''; // reset so same file can be re-selected
+
+  try {
+    let bodies;
+    let fileType;
+    if (file.name.toLowerCase().endsWith('.glb')) {
+      fileType = 'glb';
+      const buf = await file.arrayBuffer();
+      bodies = parseGLB(buf);
+    } else if (file.name.toLowerCase().endsWith('.obj')) {
+      fileType = 'obj';
+      const text = await file.text();
+      bodies = parseOBJ(text);
+    } else {
+      alert('Please select a .glb or .obj file exported from Shapr3D.');
+      return;
+    }
+    openImportModal(bodies, fileType);
+  } catch (err) {
+    alert(`Could not read file: ${err.message}`);
+  }
+});
+
+// Unit selector change → re-render body list
+document.getElementById('import-unit-sel').addEventListener('change', () => {
+  const displayUnit = document.getElementById('import-unit-sel').value;
+  const appUnit = document.getElementById('units').value;
+  const list = document.getElementById('import-body-list');
+  // Remember which were checked
+  const checked = new Set([...list.querySelectorAll('.import-body-cb:checked')].map(c => parseInt(c.dataset.idx)));
+  renderImportModal(_importBodies, displayUnit, appUnit);
+  // Restore checked state
+  list.querySelectorAll('.import-body-cb').forEach(cb => {
+    const idx = parseInt(cb.dataset.idx);
+    cb.checked = checked.has(idx);
+    cb.closest('label').classList.toggle('checked', cb.checked);
+  });
+  updateImportAddBtn();
+});
+
+// Select all / none toggle
+document.getElementById('import-select-all').addEventListener('click', () => {
+  const cbs = [...document.querySelectorAll('#import-body-list .import-body-cb')];
+  const allChecked = cbs.every(c => c.checked);
+  cbs.forEach(c => {
+    c.checked = !allChecked;
+    c.closest('label').classList.toggle('checked', c.checked);
+  });
+  updateImportAddBtn();
+});
+
+document.getElementById('import-add-btn').addEventListener('click', commitImport);
+document.getElementById('import-modal-close').addEventListener('click', closeImportModal);
+// Close on backdrop click
+document.getElementById('import-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('import-modal')) closeImportModal();
 });
 </script>
 </body>
