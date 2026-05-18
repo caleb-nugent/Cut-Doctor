@@ -1618,6 +1618,56 @@ header .logo-mark {
   </div>
 </div>
 
+<!-- Auth Modal -->
+<div id="auth-modal" class="import-backdrop" style="display:none">
+  <div class="import-modal" style="max-width:380px">
+    <div class="import-modal-header">
+      <span class="import-modal-title" id="auth-modal-title">Log in</span>
+      <button class="import-modal-close" id="auth-modal-close">&#x2715;</button>
+    </div>
+    <div class="import-modal-body" style="gap:12px">
+      <div id="auth-error" style="display:none;color:var(--primary);font-size:0.78rem;padding:8px 10px;background:var(--primary-l);border:1px solid var(--primary-b)"></div>
+      <div class="field">
+        <label class="field-label">Email</label>
+        <input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label class="field-label">Password</label>
+        <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" minlength="6">
+      </div>
+      <button class="import-add-btn" id="auth-submit" style="width:100%;justify-content:center">Log in</button>
+      <div style="text-align:center">
+        <button class="import-select-all" id="auth-toggle-mode">Don't have an account? Register</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Save Cut List Modal -->
+<div id="save-modal" class="import-backdrop" style="display:none">
+  <div class="import-modal" style="max-width:400px">
+    <div class="import-modal-header">
+      <span class="import-modal-title">Save cut list</span>
+      <button class="import-modal-close" id="save-modal-close">&#x2715;</button>
+    </div>
+    <div class="import-modal-body" style="gap:12px">
+      <div class="field">
+        <label class="field-label">Cut list name</label>
+        <input type="text" id="save-cutlist-name" placeholder="e.g. Bookshelf v1">
+      </div>
+      <div class="field">
+        <label class="field-label">Project</label>
+        <select id="save-project-select" style="width:100%;padding:7px 8px;font-size:0.82rem;border:1px solid var(--border);background:var(--panel);color:var(--text);font-family:var(--font-body)"></select>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:0.75rem;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.08em">Or new project:</span>
+        <input type="text" id="save-new-project-name" placeholder="Project name" style="flex:1;padding:6px 8px;font-size:0.8rem;border:1px solid var(--border);background:var(--panel);color:var(--text)">
+      </div>
+      <button class="import-add-btn" id="save-confirm-btn" style="width:100%">Save</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── Supabase config ────────────────────────────────────────────────────────────
 // SQL to run in your Supabase SQL editor:
@@ -3371,56 +3421,5 @@ function escHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 </script>
-
-<!-- Auth Modal -->
-<div id="auth-modal" class="import-backdrop" style="display:none">
-  <div class="import-modal" style="max-width:380px">
-    <div class="import-modal-header">
-      <span class="import-modal-title" id="auth-modal-title">Log in</span>
-      <button class="import-modal-close" id="auth-modal-close">&#x2715;</button>
-    </div>
-    <div class="import-modal-body" style="gap:12px">
-      <div id="auth-error" style="display:none;color:var(--primary);font-size:0.78rem;padding:8px 10px;background:var(--primary-l);border:1px solid var(--primary-b)"></div>
-      <div class="field">
-        <label class="field-label">Email</label>
-        <input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email">
-      </div>
-      <div class="field">
-        <label class="field-label">Password</label>
-        <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" minlength="6">
-      </div>
-      <button class="import-add-btn" id="auth-submit" style="width:100%;justify-content:center">Log in</button>
-      <div style="text-align:center">
-        <button class="import-select-all" id="auth-toggle-mode">Don't have an account? Register</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Save Cut List Modal -->
-<div id="save-modal" class="import-backdrop" style="display:none">
-  <div class="import-modal" style="max-width:400px">
-    <div class="import-modal-header">
-      <span class="import-modal-title">Save cut list</span>
-      <button class="import-modal-close" id="save-modal-close">&#x2715;</button>
-    </div>
-    <div class="import-modal-body" style="gap:12px">
-      <div class="field">
-        <label class="field-label">Cut list name</label>
-        <input type="text" id="save-cutlist-name" placeholder="e.g. Bookshelf v1">
-      </div>
-      <div class="field">
-        <label class="field-label">Project</label>
-        <select id="save-project-select" style="width:100%;padding:7px 8px;font-size:0.82rem;border:1px solid var(--border);background:var(--panel);color:var(--text);font-family:var(--font-body)"></select>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:0.75rem;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.08em">Or new project:</span>
-        <input type="text" id="save-new-project-name" placeholder="Project name" style="flex:1;padding:6px 8px;font-size:0.8rem;border:1px solid var(--border);background:var(--panel);color:var(--text)">
-      </div>
-      <button class="import-add-btn" id="save-confirm-btn" style="width:100%">Save</button>
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
