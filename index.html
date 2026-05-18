@@ -1312,6 +1312,7 @@ header .logo-mark {
         <span class="import-units-label">Display units</span>
         <div class="option-pills" style="flex:none">
           <select id="import-unit-sel" style="font-family:var(--font-mono);font-size:0.7rem;background:transparent;border:none;color:var(--text);cursor:pointer;outline:none;padding:4px 6px;">
+            <option value="m">m</option>
             <option value="mm">mm</option>
             <option value="in">in</option>
             <option value="cm">cm</option>
@@ -2438,23 +2439,36 @@ function parseOBJ(text) {
       }
     }
   }
-  return bodies
+  const raw = bodies
     .filter(b => b.vertices > 0 && b.min[0] !== Infinity)
     .map(b => ({
       name: b.name,
       dims: [b.max[0]-b.min[0],b.max[1]-b.min[1],b.max[2]-b.min[2]].sort((a,c)=>c-a)
     }))
     .filter(b => b.dims[0] > 0.001);
+
+  // Auto-detect unit scale from the largest dimension found:
+  //   < 5   → meters  (0.3048 m = 12 in; Shapr3D OBJ default)
+  //   < 200 → inches  (typical woodworking range)
+  //   else  → mm
+  const maxDim = Math.max(...raw.map(b => b.dims[0]));
+  const toMM = maxDim < 5 ? 1000 : maxDim < 200 ? 25.4 : 1;
+
+  // Normalise all dims to mm so the rest of the pipeline matches GLB
+  const result = raw.map(b => ({ name: b.name, dims: b.dims.map(d => d * toMM) }));
+  return result;
 }
 
 // ── Import modal UI ───────────────────────────────────────────────────────────
 let _importBodies  = [];
 let _importFileType = 'glb'; // 'glb' | 'obj'
 
+// All dims arriving here are in mm (both GLB and OBJ are normalised at parse time)
 function formatDim(mm, toUnit) {
-  if (toUnit === 'in') return (mm / 25.4).toFixed(3).replace(/\.?0+$/, '');
-  if (toUnit === 'ft') return (mm / 304.8).toFixed(3).replace(/\.?0+$/, '');
-  return mm.toFixed(1);
+  const toMM = u => ({ 'mm':1, 'in':25.4, 'ft':304.8, 'cm':10, 'm':1000 }[u] || 1);
+  const val = mm / toMM(toUnit);
+  const decimals = toUnit === 'in' ? 3 : toUnit === 'm' ? 4 : toUnit === 'ft' ? 3 : 1;
+  return val.toFixed(decimals).replace(/\.?0+$/, '');
 }
 
 function openImportModal(bodies, fileType) {
@@ -2463,9 +2477,9 @@ function openImportModal(bodies, fileType) {
   const modal = document.getElementById('import-modal');
   const appUnit = document.getElementById('units').value; // in / mm / ft
 
-  // Determine default display unit based on file type and app unit
-  // GLB is always meters (→ mm internally). OBJ may be in any unit.
-  let defaultUnit = fileType === 'glb' ? (appUnit === 'in' ? 'in' : 'mm') : appUnit;
+  // Both GLB and OBJ are normalised to mm at parse time.
+  // Default display unit matches the app unit (convert mm → appUnit for display).
+  const defaultUnit = appUnit;
 
   renderImportModal(bodies, defaultUnit, appUnit);
   modal.style.display = 'flex';
@@ -2532,23 +2546,17 @@ function commitImport() {
   const displayUnit = document.getElementById('import-unit-sel').value;
   const appUnit = document.getElementById('units').value;
 
+  // Both GLB and OBJ dims are normalised to mm at parse time
+  const toMM = u => ({ 'mm':1, 'in':25.4, 'ft':304.8, 'cm':10, 'm':1000 }[u] || 1);
+  const fromMM = u => 1 / toMM(u);
+
   const checked = [...document.querySelectorAll('#import-body-list .import-body-cb:checked')];
   for (const cb of checked) {
     const idx = parseInt(cb.dataset.idx);
     const b = _importBodies[idx];
-    let [d0, d1] = b.dims; // d0=L, d1=W (already mm for GLB, raw for OBJ)
-
-    // Convert display unit → app unit
-    // For GLB: dims are in mm. For OBJ: dims are in whatever displayUnit is.
-    // We need to produce values in appUnit.
-    const toMM = u => ({ 'mm':1, 'in':25.4, 'ft':304.8, 'cm':10, 'm':1000 }[u] || 1);
-    const dimMM_L = _importFileType === 'glb' ? d0 : d0 * toMM(displayUnit);
-    const dimMM_W = _importFileType === 'glb' ? d1 : d1 * toMM(displayUnit);
-
-    const fromMM = u => 1 / toMM(u);
+    const [dimMM_L, dimMM_W] = b.dims; // already in mm
     const L = +(dimMM_L * fromMM(appUnit)).toFixed(4);
     const W = +(dimMM_W * fromMM(appUnit)).toFixed(4);
-
     addPiece(L, W, b.name, 1);
   }
 
