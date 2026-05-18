@@ -406,6 +406,20 @@ header .logo-mark {
 
 .qty-wrap input:focus { outline: none; border-color: var(--primary); }
 
+.btn-swap-dims {
+  background: none;
+  border: none;
+  padding: 2px 3px;
+  cursor: pointer;
+  color: var(--muted);
+  opacity: 0.5;
+  transition: opacity 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.btn-swap-dims:hover { opacity: 1; color: var(--primary); }
+
 .btn-remove {
   background: none;
   border: none;
@@ -1798,6 +1812,7 @@ document.getElementById('add-sheet').addEventListener('click', () => addSheet())
 
 // Seed with one default sheet
 addSheet(48, 96, 'Sheet 1', 1);
+addPiece(24, 12, 'Sample Piece', 2);
 
 // ── Piece management ──────────────────────────────────────────────────────────
 let pieceIdCounter = 0;
@@ -1826,7 +1841,11 @@ function createPieceEl(piece) {
         <span class="piece-cell-key">L</span>
         <input type="number" inputmode="decimal" class="piece-cell-val dim-h" value="${piece.h}" min="0.1" step="0.125">
       </div>
-      <span class="piece-dim-sep">×</span>
+      <button class="btn-swap-dims" title="Swap length and width">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 5h10M9 2l3 3-3 3"/><path d="M14 11H4M7 8l-3 3 3 3"/>
+        </svg>
+      </button>
       <div class="piece-data-cell">
         <span class="piece-cell-key">W</span>
         <input type="number" inputmode="decimal" class="piece-cell-val dim-w" value="${piece.w}" min="0.1" step="0.125">
@@ -1860,13 +1879,23 @@ function createPieceEl(piece) {
     const p = pieces.find(p => p.id === piece.id);
     if (p) p.label = e.target.value;
   });
-  el.querySelector('.dim-w').addEventListener('input', e => {
+  const dimW = el.querySelector('.dim-w');
+  const dimH = el.querySelector('.dim-h');
+  dimW.addEventListener('input', e => {
     const p = pieces.find(p => p.id === piece.id);
     if (p) p.w = parseFloat(e.target.value) || 0;
   });
-  el.querySelector('.dim-h').addEventListener('input', e => {
+  dimH.addEventListener('input', e => {
     const p = pieces.find(p => p.id === piece.id);
     if (p) p.h = parseFloat(e.target.value) || 0;
+  });
+  el.querySelector('.btn-swap-dims').addEventListener('click', () => {
+    const p = pieces.find(p => p.id === piece.id);
+    if (!p) return;
+    [p.w, p.h] = [p.h, p.w];
+    dimW.value = p.w;
+    dimH.value = p.h;
+    scheduleRecalculate();
   });
   const qtyInput = el.querySelector('.dim-qty');
   qtyInput.addEventListener('input', e => {
