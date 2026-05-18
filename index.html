@@ -1629,7 +1629,14 @@ header .logo-mark {
 // create policy "Users manage own cut lists" on public.cut_lists for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 const SUPABASE_URL      = window.SUPABASE_URL      || '';
 const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
-const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let _supabase = null;
+try {
+  if (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase) {
+    _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (e) {
+  console.warn('Supabase init failed — auth features disabled:', e);
+}
 let currentUser = null;
 
 // ── State serialisation helpers ───────────────────────────────────────────────
@@ -2986,20 +2993,22 @@ document.getElementById('import-modal').addEventListener('click', e => {
 // ── Auth & Projects ────────────────────────────────────────────────────────────
 
 // Track auth state
-_supabase.auth.onAuthStateChange(async (event, session) => {
-  currentUser = session?.user ?? null;
-  updateAuthUI();
-  if (currentUser && document.getElementById('page-projects').style.display !== 'none') {
-    renderProjectsPage();
-  }
-});
+if (_supabase) {
+  _supabase.auth.onAuthStateChange(async (event, session) => {
+    currentUser = session?.user ?? null;
+    updateAuthUI();
+    if (currentUser && document.getElementById('page-projects').style.display !== 'none') {
+      renderProjectsPage();
+    }
+  });
 
-// Init auth state on load
-(async () => {
-  const { data: { session } } = await _supabase.auth.getSession();
-  currentUser = session?.user ?? null;
-  updateAuthUI();
-})();
+  // Init auth state on load
+  (async () => {
+    const { data: { session } } = await _supabase.auth.getSession();
+    currentUser = session?.user ?? null;
+    updateAuthUI();
+  })();
+}
 
 function updateAuthUI() {
   const authBtn  = document.getElementById('auth-btn');
@@ -3071,6 +3080,7 @@ document.getElementById('auth-submit').addEventListener('click', async () => {
 
   if (!email || !password) { errEl.textContent = 'Please enter email and password.'; errEl.style.display = ''; return; }
 
+  if (!_supabase) { errEl.textContent = 'Auth not configured.'; errEl.style.display = ''; return; }
   let error;
   if (authMode === 'login') {
     ({ error } = await _supabase.auth.signInWithPassword({ email, password }));
@@ -3098,7 +3108,7 @@ document.getElementById('auth-submit').addEventListener('click', async () => {
 });
 
 document.getElementById('logout-btn').addEventListener('click', async () => {
-  await _supabase.auth.signOut();
+  if (_supabase) await _supabase.auth.signOut();
 });
 
 // ── Projects page rendering ───────────────────────────────────────────────────
@@ -3157,6 +3167,7 @@ function wireProjectsButtons() {
 }
 
 async function refreshProjectList() {
+  if (!_supabase) return;
   const { data: projects } = await _supabase
     .from('projects')
     .select('*')
@@ -3264,7 +3275,7 @@ async function refreshCutListGrid(projectId) {
 
 // ── Save cut list ─────────────────────────────────────────────────────────────
 async function openSaveModal() {
-  if (!currentUser) { openAuthModal(); return; }
+  if (!currentUser || !_supabase) { openAuthModal(); return; }
 
   // Populate project dropdown
   const { data: projects } = await _supabase
