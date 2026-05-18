@@ -45,6 +45,8 @@ header {
   align-items: center;
   gap: 12px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+  flex-wrap: nowrap;
+  overflow: hidden;
 }
 
 header svg { opacity: 0.75; }
@@ -1351,6 +1353,45 @@ header .logo-mark {
 
   /* Legend — tighter */
   .legend-row { gap: 10px; font-size: 0.72rem; }
+
+  /* Header — collapse nav + auth on small screens */
+  header { padding: 11px 14px; gap: 8px; }
+  .header-nav { margin-left: 4px; gap: 0; }
+  .header-nav-btn { padding: 5px 8px; font-size: 0.62rem; letter-spacing: 0.06em; }
+  .header-sub { display: none; }
+  .header-user-email { display: none; }
+  .header-auth-btn { padding: 5px 9px; font-size: 0.62rem; }
+  .header-logout-btn { padding: 4px 8px; font-size: 0.6rem; }
+
+  /* Modals — full width, anchored to bottom on mobile */
+  .import-backdrop { align-items: flex-end; padding: 0; }
+  .import-modal {
+    max-width: 100% !important;
+    width: 100%;
+    border-radius: 0;
+    max-height: 92vh;
+    border-bottom: none;
+  }
+
+  /* Projects page — stack sidebar above main */
+  .projects-layout {
+    grid-template-columns: 1fr;
+    padding: 0;
+    min-height: unset;
+  }
+  .projects-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    min-height: unset;
+  }
+  .projects-main {
+    border-left: 1px solid var(--border);
+    border-top: none;
+    min-height: 200px;
+    padding: 14px;
+  }
+  .projects-detail-header { flex-wrap: wrap; gap: 8px; }
+  .cut-list-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
 }
 </style>
 </head>
