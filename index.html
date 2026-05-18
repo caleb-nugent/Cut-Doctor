@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 :root {
   --bg:       #efede4;
@@ -919,6 +920,226 @@ header .logo-mark {
 }
 .btn-import-shapr:hover { border-color: var(--primary); color: var(--primary); }
 
+/* ── Header nav & auth ───────────────────────────────────────────────────────── */
+.header-nav {
+  display: flex;
+  gap: 2px;
+  margin-left: 20px;
+}
+.header-nav-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.55);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: color 0.15s, background 0.15s;
+}
+.header-nav-btn:hover { color: white; }
+.header-nav-btn.active { background: rgba(255,255,255,0.12); color: white; }
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.header-auth-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.8);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 5px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.header-auth-btn:hover { border-color: rgba(255,255,255,0.5); color: white; }
+.header-user-menu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.header-user-email {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.5);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.header-logout-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.55);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.header-logout-btn:hover { border-color: rgba(255,255,255,0.4); color: white; }
+
+/* ── Projects page ───────────────────────────────────────────────────────────── */
+.projects-layout {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 0;
+  min-height: calc(100vh - 60px);
+  align-items: start;
+}
+.projects-sidebar {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  min-height: 400px;
+}
+.projects-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.btn-new-project {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-new-project:hover { background: var(--primary-h); }
+.project-list-item {
+  padding: 10px 16px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.project-list-item:hover { background: var(--bg); }
+.project-list-item.active { background: var(--primary-l); color: var(--primary); font-weight: 500; }
+.project-list-item svg { flex-shrink: 0; opacity: 0.5; }
+.projects-main {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: none;
+  min-height: 400px;
+  padding: 20px;
+}
+.projects-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+.projects-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.projects-detail-title {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
+  flex: 1;
+}
+.btn-rename-project, .btn-delete-project {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  color: var(--muted);
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-rename-project:hover { border-color: var(--text); color: var(--text); }
+.btn-delete-project:hover { border-color: var(--primary); color: var(--primary); }
+.cut-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+.cut-list-card {
+  border: 1px solid var(--border);
+  padding: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+}
+.cut-list-card:hover { border-color: var(--primary); background: var(--primary-l); }
+.cut-list-card-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cut-list-card-date {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+}
+.cut-list-card-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 2px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+.cut-list-card:hover .cut-list-card-delete { opacity: 1; }
+.cut-list-card-delete:hover { color: var(--primary); }
+.projects-login-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 60vh;
+  text-align: center;
+}
+.projects-login-prompt p { color: var(--muted); font-size: 0.9rem; }
+
 /* ── Dark mode ───────────────────────────────────────────────────────────────── */
 [data-theme="dark"] {
   --bg:       #1c1a15;
@@ -995,9 +1216,17 @@ header .logo-mark {
 [data-theme="dark"] .btn-import-shapr { border-color: #38332a; color: #5a5248; }
 [data-theme="dark"] .btn-import-shapr:hover { border-color: var(--primary); color: var(--primary); }
 
+[data-theme="dark"] .projects-sidebar,
+[data-theme="dark"] .projects-main,
+[data-theme="dark"] .cut-list-card { background: #242018; }
+[data-theme="dark"] .project-list-item:hover { background: #2c2820; }
+[data-theme="dark"] .project-list-item.active { background: #3a1800; color: var(--primary); }
+[data-theme="dark"] .cut-list-card:hover { background: #3a1800; }
+[data-theme="dark"] #save-project-select { background: #2c2820; color: var(--text); border-color: var(--border); }
+
 /* Theme toggle button in header */
 .theme-toggle {
-  margin-left: auto;
+  margin-left: 0;
   flex-shrink: 0;
   background: none;
   border: 1px solid rgba(255,255,255,0.18);
@@ -1119,14 +1348,27 @@ header .logo-mark {
     <h1>The Cut Doctor</h1>
     <div class="header-sub">Cut Layout Calculator</div>
   </div>
-  <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">
-    <!-- Moon (shown in light mode) -->
-    <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
-    <!-- Sun (shown in dark mode) -->
-    <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-  </button>
+  <!-- Nav tabs -->
+  <nav class="header-nav">
+    <button class="header-nav-btn active" id="nav-calculator">Calculator</button>
+    <button class="header-nav-btn" id="nav-projects">Projects</button>
+  </nav>
+  <!-- Right side controls -->
+  <div class="header-right">
+    <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">
+      <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
+      <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </button>
+    <!-- Auth button: shows Login when logged out, user email + logout when logged in -->
+    <button class="header-auth-btn" id="auth-btn">Log in</button>
+    <div class="header-user-menu" id="user-menu" style="display:none">
+      <span class="header-user-email" id="user-email-display"></span>
+      <button class="header-logout-btn" id="logout-btn">Log out</button>
+    </div>
+  </div>
 </header>
 
+<div id="page-calculator">
 <div class="layout">
   <!-- Left: inputs -->
   <div>
@@ -1270,6 +1512,10 @@ header .logo-mark {
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5V2h8v3"/><rect x="2" y="5" width="12" height="7" rx="1"/><path d="M4 12v2h8v-2"/><circle cx="12.5" cy="8.5" r="0.8" fill="currentColor" stroke="none"/></svg>
             Print
           </button>
+          <button class="viz-btn" id="save-cut-list-btn" title="Save cut list" style="display:none">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H3a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V3a1 1 0 00-1-1z"/><path d="M10 2v5H6V2"/><path d="M4 11h8"/></svg>
+            Save
+          </button>
         </div>
       </div>
       <div id="empty-state" class="empty-state">
@@ -1292,6 +1538,34 @@ header .logo-mark {
           <div class="legend-swatch" style="background:#faf8f4;border:1px dashed #c95535;"></div>
           Rotated piece
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- end #page-calculator -->
+
+<div id="page-projects" style="display:none">
+  <div class="projects-layout">
+    <!-- Left: project list -->
+    <div class="projects-sidebar">
+      <div class="projects-sidebar-header">
+        <span class="panel-title" style="margin:0">Projects</span>
+        <button class="btn-new-project" id="btn-new-project">+ New</button>
+      </div>
+      <div id="project-list"></div>
+    </div>
+    <!-- Right: cut lists within selected project -->
+    <div class="projects-main" id="projects-main">
+      <div class="projects-empty-state" id="projects-empty">
+        <p>Select or create a project to see your saved cut lists.</p>
+      </div>
+      <div id="project-detail" style="display:none">
+        <div class="projects-detail-header">
+          <span class="projects-detail-title" id="project-detail-name"></span>
+          <button class="btn-rename-project" id="btn-rename-project">Rename</button>
+          <button class="btn-delete-project" id="btn-delete-project">Delete project</button>
+        </div>
+        <div id="cut-list-grid"></div>
       </div>
     </div>
   </div>
@@ -1330,6 +1604,84 @@ header .logo-mark {
 </div>
 
 <script>
+// ── Supabase config ────────────────────────────────────────────────────────────
+// SQL to run in your Supabase SQL editor:
+// create table public.projects (
+//   id uuid default gen_random_uuid() primary key,
+//   user_id uuid references auth.users(id) on delete cascade not null,
+//   name text not null,
+//   created_at timestamptz default now() not null,
+//   updated_at timestamptz default now() not null
+// );
+// create table public.cut_lists (
+//   id uuid default gen_random_uuid() primary key,
+//   project_id uuid references public.projects(id) on delete cascade not null,
+//   user_id uuid references auth.users(id) on delete cascade not null,
+//   name text not null,
+//   data jsonb not null,
+//   created_at timestamptz default now() not null,
+//   updated_at timestamptz default now() not null
+// );
+// alter table public.projects enable row level security;
+// alter table public.cut_lists enable row level security;
+// create policy "Users manage own projects" on public.projects for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+// create policy "Users manage own cut lists" on public.cut_lists for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+const SUPABASE_URL  = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentUser = null;
+
+// ── State serialisation helpers ───────────────────────────────────────────────
+function getAppState() {
+  return {
+    version: 1,
+    units: document.getElementById('units').value,
+    sheets: sheets.map(s => ({...s})),
+    pieces: pieces.map(p => ({...p})),
+    settings: {
+      kerf: parseFloat(document.getElementById('kerf-val').value) || 0,
+      kerfEnabled: document.getElementById('kerf-enabled').checked,
+      grainDir: document.querySelector('[data-grain].active')?.dataset.grain || 'off',
+      scrapPref: document.querySelector('[data-scrap].active')?.dataset.scrap || 'none',
+      fewerCuts: document.getElementById('fewer-cuts-toggle').checked,
+    }
+  };
+}
+
+function loadAppState(state) {
+  if (!state || state.version !== 1) return;
+  // units
+  document.getElementById('units').value = state.units || 'in';
+  // sheets
+  sheets.length = 0;
+  document.getElementById('sheets-list').innerHTML = '';
+  (state.sheets || []).forEach(s => addSheet(s.w, s.h, s.label, s.qty));
+  // pieces
+  pieces.length = 0;
+  document.getElementById('pieces-list').innerHTML = '';
+  (state.pieces || []).forEach(p => addPiece(p.w, p.h, p.label, p.qty));
+  // settings
+  const cfg = state.settings || {};
+  if (cfg.kerfEnabled !== undefined) document.getElementById('kerf-enabled').checked = cfg.kerfEnabled;
+  if (cfg.kerf !== undefined) document.getElementById('kerf-val').value = cfg.kerf;
+  if (cfg.fewerCuts !== undefined) document.getElementById('fewer-cuts-toggle').checked = cfg.fewerCuts;
+  if (cfg.grainDir) {
+    document.querySelectorAll('[data-grain]').forEach(b => {
+      b.classList.toggle('active', b.dataset.grain === cfg.grainDir);
+    });
+  }
+  if (cfg.scrapPref) {
+    document.querySelectorAll('[data-scrap]').forEach(b => {
+      b.classList.remove('active','accent');
+      if (b.dataset.scrap === cfg.scrapPref) {
+        b.classList.add('active');
+        if (cfg.scrapPref !== 'none') b.classList.add('accent');
+      }
+    });
+  }
+  scheduleRecalculate();
+}
+
 // ── Shared state ──────────────────────────────────────────────────────────────
 let _recalcTimer = null;
 
@@ -2629,6 +2981,403 @@ document.getElementById('import-modal-close').addEventListener('click', closeImp
 document.getElementById('import-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('import-modal')) closeImportModal();
 });
+
+// ── Auth & Projects ────────────────────────────────────────────────────────────
+
+// Track auth state
+_supabase.auth.onAuthStateChange(async (event, session) => {
+  currentUser = session?.user ?? null;
+  updateAuthUI();
+  if (currentUser && document.getElementById('page-projects').style.display !== 'none') {
+    renderProjectsPage();
+  }
+});
+
+// Init auth state on load
+(async () => {
+  const { data: { session } } = await _supabase.auth.getSession();
+  currentUser = session?.user ?? null;
+  updateAuthUI();
+})();
+
+function updateAuthUI() {
+  const authBtn  = document.getElementById('auth-btn');
+  const userMenu = document.getElementById('user-menu');
+  const saveBtn  = document.getElementById('save-cut-list-btn');
+  if (currentUser) {
+    authBtn.style.display = 'none';
+    userMenu.style.display = 'flex';
+    document.getElementById('user-email-display').textContent = currentUser.email;
+    if (saveBtn) saveBtn.style.display = '';
+  } else {
+    authBtn.style.display = '';
+    userMenu.style.display = 'none';
+    if (saveBtn) saveBtn.style.display = 'none';
+  }
+}
+
+// ── Page navigation ───────────────────────────────────────────────────────────
+function showPage(page) {
+  document.getElementById('page-calculator').style.display  = page === 'calculator' ? '' : 'none';
+  document.getElementById('page-projects').style.display    = page === 'projects'   ? '' : 'none';
+  document.getElementById('nav-calculator').classList.toggle('active', page === 'calculator');
+  document.getElementById('nav-projects').classList.toggle('active', page === 'projects');
+  if (page === 'projects') renderProjectsPage();
+}
+
+document.getElementById('nav-calculator').addEventListener('click', () => showPage('calculator'));
+document.getElementById('nav-projects').addEventListener('click', () => showPage('projects'));
+
+// ── Auth modal ────────────────────────────────────────────────────────────────
+let authMode = 'login'; // 'login' | 'register'
+
+function openAuthModal() {
+  authMode = 'login';
+  syncAuthModal();
+  document.getElementById('auth-modal').style.display = 'flex';
+  document.getElementById('auth-email').focus();
+}
+function closeAuthModal() {
+  document.getElementById('auth-modal').style.display = 'none';
+  document.getElementById('auth-error').style.display = 'none';
+}
+function syncAuthModal() {
+  const isLogin = authMode === 'login';
+  document.getElementById('auth-modal-title').textContent = isLogin ? 'Log in' : 'Create account';
+  document.getElementById('auth-submit').textContent = isLogin ? 'Log in' : 'Create account';
+  document.getElementById('auth-toggle-mode').textContent = isLogin
+    ? "Don't have an account? Register"
+    : 'Already have an account? Log in';
+  document.getElementById('auth-password').autocomplete = isLogin ? 'current-password' : 'new-password';
+}
+
+document.getElementById('auth-btn').addEventListener('click', openAuthModal);
+document.getElementById('auth-modal-close').addEventListener('click', closeAuthModal);
+document.getElementById('auth-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('auth-modal')) closeAuthModal();
+});
+document.getElementById('auth-toggle-mode').addEventListener('click', () => {
+  authMode = authMode === 'login' ? 'register' : 'login';
+  syncAuthModal();
+  document.getElementById('auth-error').style.display = 'none';
+});
+
+document.getElementById('auth-submit').addEventListener('click', async () => {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errEl = document.getElementById('auth-error');
+  errEl.style.display = 'none';
+
+  if (!email || !password) { errEl.textContent = 'Please enter email and password.'; errEl.style.display = ''; return; }
+
+  let error;
+  if (authMode === 'login') {
+    ({ error } = await _supabase.auth.signInWithPassword({ email, password }));
+  } else {
+    ({ error } = await _supabase.auth.signUp({ email, password }));
+  }
+
+  if (error) {
+    errEl.textContent = error.message;
+    errEl.style.display = '';
+  } else {
+    closeAuthModal();
+    if (authMode === 'register') {
+      errEl.textContent = 'Check your email to confirm your account.';
+      errEl.style.display = '';
+    }
+  }
+});
+
+// Allow Enter key in auth inputs
+['auth-email','auth-password'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('auth-submit').click();
+  });
+});
+
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await _supabase.auth.signOut();
+});
+
+// ── Projects page rendering ───────────────────────────────────────────────────
+let selectedProjectId = null;
+
+async function renderProjectsPage() {
+  const page = document.getElementById('page-projects');
+
+  if (!currentUser) {
+    page.innerHTML = `
+      <div class="projects-login-prompt">
+        <p>Log in to save and manage your cut lists.</p>
+        <button class="import-add-btn" onclick="openAuthModal()">Log in / Register</button>
+      </div>`;
+    return;
+  }
+
+  // Restore page structure if it was replaced by login prompt
+  if (!document.getElementById('project-list')) {
+    page.innerHTML = `
+      <div class="projects-layout">
+        <div class="projects-sidebar">
+          <div class="projects-sidebar-header">
+            <span class="panel-title" style="margin:0">Projects</span>
+            <button class="btn-new-project" id="btn-new-project">+ New</button>
+          </div>
+          <div id="project-list"></div>
+        </div>
+        <div class="projects-main" id="projects-main">
+          <div class="projects-empty-state" id="projects-empty">
+            <p>Select or create a project to see your saved cut lists.</p>
+          </div>
+          <div id="project-detail" style="display:none">
+            <div class="projects-detail-header">
+              <span class="projects-detail-title" id="project-detail-name"></span>
+              <button class="btn-rename-project" id="btn-rename-project">Rename</button>
+              <button class="btn-delete-project" id="btn-delete-project">Delete project</button>
+            </div>
+            <div id="cut-list-grid" class="cut-list-grid"></div>
+          </div>
+        </div>
+      </div>`;
+    wireProjectsButtons();
+  }
+
+  await refreshProjectList();
+}
+
+function wireProjectsButtons() {
+  document.getElementById('btn-new-project').addEventListener('click', async () => {
+    const name = prompt('Project name:');
+    if (!name?.trim()) return;
+    await _supabase.from('projects').insert({ user_id: currentUser.id, name: name.trim() });
+    await refreshProjectList();
+  });
+}
+
+async function refreshProjectList() {
+  const { data: projects } = await _supabase
+    .from('projects')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  const list = document.getElementById('project-list');
+  if (!list) return;
+  list.innerHTML = '';
+
+  if (!projects?.length) {
+    list.innerHTML = '<div style="padding:16px;font-size:0.8rem;color:var(--muted);text-align:center">No projects yet.<br>Click + New to create one.</div>';
+    return;
+  }
+
+  for (const proj of projects) {
+    const el = document.createElement('div');
+    el.className = 'project-list-item' + (proj.id === selectedProjectId ? ' active' : '');
+    el.innerHTML = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4a1 1 0 011-1h3l2 2h7a1 1 0 011 1v7a1 1 0 01-1 1H2a1 1 0 01-1-1V4z"/></svg>${escHtml(proj.name)}`;
+    el.addEventListener('click', () => selectProject(proj));
+    list.appendChild(el);
+  }
+
+  if (selectedProjectId) {
+    const still = projects.find(p => p.id === selectedProjectId);
+    if (still) selectProject(still);
+  }
+}
+
+async function selectProject(proj) {
+  selectedProjectId = proj.id;
+  // Update sidebar highlight
+  document.querySelectorAll('.project-list-item').forEach(el => {
+    el.classList.toggle('active', el.textContent.trim() === proj.name);
+  });
+
+  document.getElementById('projects-empty').style.display = 'none';
+  document.getElementById('project-detail').style.display = '';
+  document.getElementById('project-detail-name').textContent = proj.name;
+
+  // Wire rename/delete
+  const renameBtn = document.getElementById('btn-rename-project');
+  const deleteBtn = document.getElementById('btn-delete-project');
+  renameBtn.onclick = async () => {
+    const name = prompt('New project name:', proj.name);
+    if (!name?.trim() || name.trim() === proj.name) return;
+    await _supabase.from('projects').update({ name: name.trim(), updated_at: new Date().toISOString() }).eq('id', proj.id);
+    proj.name = name.trim();
+    document.getElementById('project-detail-name').textContent = proj.name;
+    await refreshProjectList();
+  };
+  deleteBtn.onclick = async () => {
+    if (!confirm(`Delete "${proj.name}" and all its cut lists?`)) return;
+    await _supabase.from('projects').delete().eq('id', proj.id);
+    selectedProjectId = null;
+    document.getElementById('projects-empty').style.display = '';
+    document.getElementById('project-detail').style.display = 'none';
+    await refreshProjectList();
+  };
+
+  await refreshCutListGrid(proj.id);
+}
+
+async function refreshCutListGrid(projectId) {
+  const { data: lists } = await _supabase
+    .from('cut_lists')
+    .select('id, name, created_at, updated_at')
+    .eq('project_id', projectId)
+    .order('updated_at', { ascending: false });
+
+  const grid = document.getElementById('cut-list-grid');
+  if (!grid) return;
+  grid.className = 'cut-list-grid';
+  grid.innerHTML = '';
+
+  if (!lists?.length) {
+    grid.innerHTML = '<p style="color:var(--muted);font-size:0.82rem">No cut lists saved in this project yet. Use the Save button on the Calculator to add one.</p>';
+    return;
+  }
+
+  for (const cl of lists) {
+    const card = document.createElement('div');
+    card.className = 'cut-list-card';
+    const date = new Date(cl.updated_at || cl.created_at).toLocaleDateString();
+    card.innerHTML = `
+      <div class="cut-list-card-name" title="${escHtml(cl.name)}">${escHtml(cl.name)}</div>
+      <div class="cut-list-card-date">${date}</div>
+      <button class="cut-list-card-delete" title="Delete" data-id="${cl.id}">&#x2715;</button>`;
+    card.addEventListener('click', async (e) => {
+      if (e.target.closest('.cut-list-card-delete')) return;
+      const { data } = await _supabase.from('cut_lists').select('data').eq('id', cl.id).single();
+      if (data?.data) {
+        loadAppState(data.data);
+        showPage('calculator');
+      }
+    });
+    card.querySelector('.cut-list-card-delete').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!confirm(`Delete "${cl.name}"?`)) return;
+      await _supabase.from('cut_lists').delete().eq('id', cl.id);
+      await refreshCutListGrid(projectId);
+    });
+    grid.appendChild(card);
+  }
+}
+
+// ── Save cut list ─────────────────────────────────────────────────────────────
+async function openSaveModal() {
+  if (!currentUser) { openAuthModal(); return; }
+
+  // Populate project dropdown
+  const { data: projects } = await _supabase
+    .from('projects')
+    .select('id, name')
+    .order('created_at', { ascending: false });
+
+  const sel = document.getElementById('save-project-select');
+  sel.innerHTML = projects?.length
+    ? projects.map(p => `<option value="${p.id}">${escHtml(p.name)}</option>`).join('')
+    : '<option value="">— no projects yet —</option>';
+
+  document.getElementById('save-cutlist-name').value = '';
+  document.getElementById('save-new-project-name').value = '';
+  document.getElementById('save-modal').style.display = 'flex';
+  document.getElementById('save-cutlist-name').focus();
+}
+
+document.getElementById('save-cut-list-btn')?.addEventListener('click', openSaveModal);
+document.getElementById('save-modal-close').addEventListener('click', () => {
+  document.getElementById('save-modal').style.display = 'none';
+});
+document.getElementById('save-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('save-modal')) document.getElementById('save-modal').style.display = 'none';
+});
+
+document.getElementById('save-confirm-btn').addEventListener('click', async () => {
+  const name = document.getElementById('save-cutlist-name').value.trim();
+  if (!name) { alert('Please name this cut list.'); return; }
+
+  let projectId = document.getElementById('save-project-select').value;
+  const newProjName = document.getElementById('save-new-project-name').value.trim();
+
+  if (newProjName) {
+    const { data } = await _supabase
+      .from('projects')
+      .insert({ user_id: currentUser.id, name: newProjName })
+      .select('id')
+      .single();
+    projectId = data?.id;
+  }
+
+  if (!projectId) { alert('Please select or create a project.'); return; }
+
+  const state = getAppState();
+  await _supabase.from('cut_lists').insert({
+    project_id: projectId,
+    user_id: currentUser.id,
+    name,
+    data: state,
+  });
+
+  document.getElementById('save-modal').style.display = 'none';
+
+  // Brief visual feedback on the save button
+  const btn = document.getElementById('save-cut-list-btn');
+  if (btn) { btn.textContent = '✓ Saved'; setTimeout(() => { btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H3a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V3a1 1 0 00-1-1z"/><path d="M10 2v5H6V2"/><path d="M4 11h8"/></svg> Save'; }, 2000); }
+});
+
+// ── Utility ────────────────────────────────────────────────────────────────────
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 </script>
+
+<!-- Auth Modal -->
+<div id="auth-modal" class="import-backdrop" style="display:none">
+  <div class="import-modal" style="max-width:380px">
+    <div class="import-modal-header">
+      <span class="import-modal-title" id="auth-modal-title">Log in</span>
+      <button class="import-modal-close" id="auth-modal-close">&#x2715;</button>
+    </div>
+    <div class="import-modal-body" style="gap:12px">
+      <div id="auth-error" style="display:none;color:var(--primary);font-size:0.78rem;padding:8px 10px;background:var(--primary-l);border:1px solid var(--primary-b)"></div>
+      <div class="field">
+        <label class="field-label">Email</label>
+        <input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label class="field-label">Password</label>
+        <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" minlength="6">
+      </div>
+      <button class="import-add-btn" id="auth-submit" style="width:100%;justify-content:center">Log in</button>
+      <div style="text-align:center">
+        <button class="import-select-all" id="auth-toggle-mode">Don't have an account? Register</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Save Cut List Modal -->
+<div id="save-modal" class="import-backdrop" style="display:none">
+  <div class="import-modal" style="max-width:400px">
+    <div class="import-modal-header">
+      <span class="import-modal-title">Save cut list</span>
+      <button class="import-modal-close" id="save-modal-close">&#x2715;</button>
+    </div>
+    <div class="import-modal-body" style="gap:12px">
+      <div class="field">
+        <label class="field-label">Cut list name</label>
+        <input type="text" id="save-cutlist-name" placeholder="e.g. Bookshelf v1">
+      </div>
+      <div class="field">
+        <label class="field-label">Project</label>
+        <select id="save-project-select" style="width:100%;padding:7px 8px;font-size:0.82rem;border:1px solid var(--border);background:var(--panel);color:var(--text);font-family:var(--font-body)"></select>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:0.75rem;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.08em">Or new project:</span>
+        <input type="text" id="save-new-project-name" placeholder="Project name" style="flex:1;padding:6px 8px;font-size:0.8rem;border:1px solid var(--border);background:var(--panel);color:var(--text)">
+      </div>
+      <button class="import-add-btn" id="save-confirm-btn" style="width:100%">Save</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
