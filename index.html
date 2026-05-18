@@ -1812,7 +1812,6 @@ document.getElementById('add-sheet').addEventListener('click', () => addSheet())
 
 // Seed with one default sheet
 addSheet(48, 96, 'Sheet 1', 1);
-addPiece(24, 12, 'Sample Piece', 2);
 
 // ── Piece management ──────────────────────────────────────────────────────────
 let pieceIdCounter = 0;
@@ -1929,6 +1928,9 @@ function addPiece(w = 12, h = 12, label = '', qty = 1) {
 }
 
 document.getElementById('add-piece').addEventListener('click', () => addPiece());
+
+// Seed with one default piece
+addPiece(24, 12, 'Sample Piece', 2);
 
 // ── Drag-to-reorder pieces ────────────────────────────────────────────────────
 (function () {
