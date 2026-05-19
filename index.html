@@ -47,6 +47,9 @@ header {
   box-shadow: 0 2px 12px rgba(0,0,0,0.35);
   flex-wrap: nowrap;
   overflow: hidden;
+  position: sticky;
+  top: 0;
+  z-index: 900;
 }
 
 header svg { opacity: 0.75; }
@@ -73,6 +76,20 @@ header .logo-mark {
   filter: brightness(0) invert(1);
   opacity: 0.9;
 }
+.logo-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: inherit;
+  text-align: left;
+  flex-shrink: 0;
+}
+.logo-link:hover .logo-mark { opacity: 1; }
+.logo-link:hover h1 { opacity: 0.85; }
 
 .layout {
   max-width: 1300px;
@@ -1398,12 +1415,14 @@ header .logo-mark {
 <body>
 
 <header>
-  <img class="logo-mark" src="https://www.figma.com/api/mcp/asset/51c434e1-465d-401d-b48d-b36a31428423" alt="The Cut Doctor logo">
-  <div style="width:1px;height:24px;background:rgba(255,255,255,0.15);margin:0 4px;"></div>
-  <div>
-    <h1>The Cut Doctor</h1>
-    <div class="header-sub">Cut Layout Calculator</div>
-  </div>
+  <button class="logo-link" id="nav-home" title="The Cut Doctor">
+    <img class="logo-mark" src="https://www.figma.com/api/mcp/asset/51c434e1-465d-401d-b48d-b36a31428423" alt="The Cut Doctor logo">
+    <div style="width:1px;height:24px;background:rgba(255,255,255,0.15);margin:0 4px;flex-shrink:0;"></div>
+    <div>
+      <h1>The Cut Doctor</h1>
+      <div class="header-sub">Cut Layout Calculator</div>
+    </div>
+  </button>
   <!-- Nav tabs -->
   <nav class="header-nav">
     <button class="header-nav-btn active" id="nav-calculator">Calculator</button>
@@ -3157,6 +3176,7 @@ function showPage(page) {
   if (page === 'projects') renderProjectsPage();
 }
 
+document.getElementById('nav-home').addEventListener('click', () => showPage('calculator'));
 document.getElementById('nav-calculator').addEventListener('click', () => showPage('calculator'));
 document.getElementById('nav-projects').addEventListener('click', () => showPage('projects'));
 
