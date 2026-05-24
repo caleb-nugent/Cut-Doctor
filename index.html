@@ -1589,8 +1589,9 @@ header .logo-mark {
           </button>
           <button class="viz-btn" id="save-cut-list-btn" title="Save cut list" style="display:none">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H3a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V3a1 1 0 00-1-1z"/><path d="M10 2v5H6V2"/><path d="M4 11h8"/></svg>
-            Save
+            <span id="save-btn-label">Save</span>
           </button>
+          <span id="active-list-name" style="display:none;font-size:0.7rem;color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title=""></span>
         </div>
       </div>
       <div id="empty-state" class="empty-state">
@@ -1762,6 +1763,8 @@ try {
   console.warn('Supabase init failed — auth features disabled:', e);
 }
 let currentUser = null;
+let activeListId   = null; // ID of the currently-loaded saved cut list
+let activeListName = null; // Display name of that cut list
 
 // ── State serialisation helpers ───────────────────────────────────────────────
 function getAppState() {
@@ -3402,6 +3405,9 @@ async function refreshCutListGrid(projectId) {
       const { data } = await _supabase.from('cut_lists').select('data').eq('id', cl.id).single();
       if (data?.data) {
         loadAppState(data.data);
+        activeListId   = cl.id;
+        activeListName = cl.name;
+        updateSaveLabel();
         showPage('calculator');
       }
     });
@@ -3416,6 +3422,29 @@ async function refreshCutListGrid(projectId) {
 }
 
 // ── Save cut list ─────────────────────────────────────────────────────────────
+function updateSaveLabel() {
+  const nameEl = document.getElementById('active-list-name');
+  const labelEl = document.getElementById('save-btn-label');
+  if (activeListId && activeListName) {
+    if (nameEl) { nameEl.textContent = activeListName; nameEl.title = activeListName; nameEl.style.display = ''; }
+    if (labelEl) labelEl.textContent = 'Save';
+  } else {
+    if (nameEl) nameEl.style.display = 'none';
+    if (labelEl) labelEl.textContent = 'Save';
+  }
+}
+
+async function saveOverwrite() {
+  // Overwrite the currently-active cut list in place
+  const btn = document.getElementById('save-cut-list-btn');
+  const labelEl = document.getElementById('save-btn-label');
+  if (labelEl) labelEl.textContent = 'Saving…';
+  const state = getAppState();
+  await _supabase.from('cut_lists').update({ data: state, updated_at: new Date().toISOString() }).eq('id', activeListId);
+  if (labelEl) labelEl.textContent = '✓ Saved';
+  if (btn) setTimeout(() => updateSaveLabel(), 1800);
+}
+
 async function openSaveModal() {
   if (!currentUser || !_supabase) { openAuthModal(); return; }
 
@@ -3430,13 +3459,20 @@ async function openSaveModal() {
     ? projects.map(p => `<option value="${p.id}">${escHtml(p.name)}</option>`).join('')
     : '<option value="">— no projects yet —</option>';
 
-  document.getElementById('save-cutlist-name').value = '';
+  document.getElementById('save-cutlist-name').value = activeListName || '';
   document.getElementById('save-new-project-name').value = '';
   document.getElementById('save-modal').style.display = 'flex';
   document.getElementById('save-cutlist-name').focus();
 }
 
-document.getElementById('save-cut-list-btn')?.addEventListener('click', openSaveModal);
+document.getElementById('save-cut-list-btn')?.addEventListener('click', () => {
+  if (!currentUser || !_supabase) { openAuthModal(); return; }
+  if (activeListId) {
+    saveOverwrite();
+  } else {
+    openSaveModal();
+  }
+});
 document.getElementById('save-modal-close').addEventListener('click', () => {
   document.getElementById('save-modal').style.display = 'none';
 });
@@ -3463,18 +3499,25 @@ document.getElementById('save-confirm-btn').addEventListener('click', async () =
   if (!projectId) { alert('Please select or create a project.'); return; }
 
   const state = getAppState();
-  await _supabase.from('cut_lists').insert({
+  const { data: inserted } = await _supabase.from('cut_lists').insert({
     project_id: projectId,
     user_id: currentUser.id,
     name,
     data: state,
-  });
+  }).select('id').single();
+
+  // Track the new list as active so future saves overwrite it
+  if (inserted?.id) {
+    activeListId   = inserted.id;
+    activeListName = name;
+  }
 
   document.getElementById('save-modal').style.display = 'none';
+  updateSaveLabel();
 
   // Brief visual feedback on the save button
-  const btn = document.getElementById('save-cut-list-btn');
-  if (btn) { btn.textContent = '✓ Saved'; setTimeout(() => { btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H3a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V3a1 1 0 00-1-1z"/><path d="M10 2v5H6V2"/><path d="M4 11h8"/></svg> Save'; }, 2000); }
+  const labelEl = document.getElementById('save-btn-label');
+  if (labelEl) { labelEl.textContent = '✓ Saved'; setTimeout(() => updateSaveLabel(), 1800); }
 });
 
 // ── Utility ────────────────────────────────────────────────────────────────────
