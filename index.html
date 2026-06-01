@@ -2329,14 +2329,18 @@ const HIGHLIGHT_LW  = 7;              // soft glow band width behind the dash
 
 // Draw one edge with a highlight band + position-aligned dashed stroke
 // so dashes from adjacent pieces form a continuous grid.
-function dashedEdge(ctx, x1, y1, x2, y2, isHoriz) {
+function dashedEdge(ctx, x1, y1, x2, y2, isHoriz, ts = 1) {
+  const lw  = BORDER_LW   * ts;
+  const hlw = HIGHLIGHT_LW * ts;
+  const dash = [BORDER_DASH[0] * ts, BORDER_DASH[1] * ts];
+  const period = BORDER_PERIOD * ts;
   // Align dash phase to the global coordinate grid so touching edges share the same rhythm
-  const phase = isHoriz ? -(x1 % BORDER_PERIOD) : -(y1 % BORDER_PERIOD);
+  const phase = isHoriz ? -(x1 % period) : -(y1 % period);
 
   // ① Highlight band (solid, wide, very soft)
   ctx.save();
   ctx.strokeStyle = HIGHLIGHT_CLR;
-  ctx.lineWidth   = HIGHLIGHT_LW;
+  ctx.lineWidth   = hlw;
   ctx.lineCap     = 'butt';
   ctx.setLineDash([]);
   ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
@@ -2345,22 +2349,22 @@ function dashedEdge(ctx, x1, y1, x2, y2, isHoriz) {
   // ② Dashed line on top
   ctx.save();
   ctx.strokeStyle    = BORDER_COLOR;
-  ctx.lineWidth      = BORDER_LW;
+  ctx.lineWidth      = lw;
   ctx.lineCap        = 'butt';
-  ctx.setLineDash(BORDER_DASH);
+  ctx.setLineDash(dash);
   ctx.lineDashOffset = phase;
   ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
   ctx.setLineDash([]);
   ctx.restore();
 }
 
-function drawPieceBorder(ctx, rx, ry, rw, rh) {
-  const hw = BORDER_LW / 2;
+function drawPieceBorder(ctx, rx, ry, rw, rh, ts = 1) {
+  const hw = (BORDER_LW * ts) / 2;
   // Draw each side individually so horizontal and vertical edges each get their own phase
-  dashedEdge(ctx, rx - hw, ry,      rx + rw + hw, ry,      true);  // top
-  dashedEdge(ctx, rx - hw, ry + rh, rx + rw + hw, ry + rh, true);  // bottom
-  dashedEdge(ctx, rx,      ry - hw, rx,      ry + rh + hw, false); // left
-  dashedEdge(ctx, rx + rw, ry - hw, rx + rw, ry + rh + hw, false); // right
+  dashedEdge(ctx, rx - hw, ry,      rx + rw + hw, ry,      true,  ts); // top
+  dashedEdge(ctx, rx - hw, ry + rh, rx + rw + hw, ry + rh, true,  ts); // bottom
+  dashedEdge(ctx, rx,      ry - hw, rx,      ry + rh + hw, false, ts); // left
+  dashedEdge(ctx, rx + rw, ry - hw, rx + rw, ry + rh + hw, false, ts); // right
 }
 
 function dotGrid(ctx, rx, ry, rw, rh, sp, radius, color) {
@@ -2377,7 +2381,7 @@ function dotGrid(ctx, rx, ry, rw, rh, sp, radius, color) {
   ctx.restore();
 }
 
-function drawSheetOnCtx(ctx, ox, oy, bw, bh, scale, sheet, used, free, kerf, unitLabel, showLabels = true) {
+function drawSheetOnCtx(ctx, ox, oy, bw, bh, scale, sheet, used, free, kerf, unitLabel, showLabels = true, ts = 1) {
   // ── Sheet background ──────────────────────────────────────────────────────────
   ctx.fillStyle = PAPER;
   ctx.fillRect(ox, oy, bw, bh);
@@ -2398,32 +2402,32 @@ function drawSheetOnCtx(ctx, ox, oy, bw, bh, scale, sheet, used, free, kerf, uni
     const rh = (r.rotated ? r.origW : r.origH) * scale;
 
     // ① Super-soft red dot fill
-    dotGrid(ctx, rx, ry, rw, rh, DOT_SP, DOT_R, DOT_COLOR);
+    dotGrid(ctx, rx, ry, rw, rh, DOT_SP * ts, DOT_R * ts, DOT_COLOR);
 
     // ② Rotated: extra diagonal crosshatch in accent
     if (r.rotated) {
       ctx.save();
       ctx.beginPath(); ctx.rect(rx, ry, rw, rh); ctx.clip();
       ctx.strokeStyle = 'rgba(191,56,0,0.18)';
-      ctx.lineWidth = 0.8;
-      for (let d = -rh; d < rw; d += 9) {
+      ctx.lineWidth = 0.8 * ts;
+      for (let d = -rh; d < rw; d += 9 * ts) {
         ctx.beginPath(); ctx.moveTo(rx + d, ry); ctx.lineTo(rx + d + rh, ry + rh); ctx.stroke();
       }
       ctx.restore();
     }
 
     // ③ Unified highlight + dashed border, globally phase-aligned
-    drawPieceBorder(ctx, rx, ry, rw, rh);
+    drawPieceBorder(ctx, rx, ry, rw, rh, ts);
 
     // ④ Text label — clear paper knockout box, no texture
     const minDim = Math.min(rw, rh);
-    if (showLabels && minDim > 20) {
-      const fs     = Math.min(11, Math.max(7, minDim * 0.22));
-      const dfs    = Math.max(6, fs * 0.78);
+    if (showLabels && minDim > 20 * ts) {
+      const fs     = Math.min(11 * ts, Math.max(7 * ts, minDim * 0.22));
+      const dfs    = Math.max(6 * ts, fs * 0.78);
       const cx     = rx + rw / 2;
       const cy     = ry + rh / 2;
       const dimStr = r.rotated ? `${r.origW}×${r.origH} ↺` : `${r.origH}×${r.origW}`;
-      const showDim = minDim > 44;
+      const showDim = minDim > 44 * ts;
       const labelY = showDim ? cy - fs * 0.6 : cy;
 
       // Measure text to draw knockout box
@@ -2431,8 +2435,8 @@ function drawSheetOnCtx(ctx, ox, oy, bw, bh, scale, sheet, used, free, kerf, uni
       const labelW = ctx.measureText(r.label).width;
       ctx.font = `500 ${dfs}px 'Geist Mono', monospace`;
       const dimW = showDim ? ctx.measureText(dimStr).width : 0;
-      const boxW = Math.max(labelW, dimW) + 10;
-      const boxH = showDim ? fs + dfs + 8 : fs + 6;
+      const boxW = Math.max(labelW, dimW) + 10 * ts;
+      const boxH = showDim ? fs + dfs + 8 * ts : fs + 6 * ts;
 
       // Clear paper box — no dots inside
       ctx.fillStyle = PAPER;
@@ -2454,18 +2458,19 @@ function drawSheetOnCtx(ctx, ox, oy, bw, bh, scale, sheet, used, free, kerf, uni
   }
 
   // ── Sheet border — double rule ────────────────────────────────────────────────
-  ctx.strokeStyle = INK; ctx.lineWidth = 1.5;
-  ctx.strokeRect(ox + 0.75, oy + 0.75, bw - 1.5, bh - 1.5);
-  ctx.strokeStyle = INK; ctx.lineWidth = 0.5; ctx.globalAlpha = 0.25;
-  ctx.strokeRect(ox + 4, oy + 4, bw - 8, bh - 8);
+  ctx.strokeStyle = INK; ctx.lineWidth = 1.5 * ts;
+  ctx.strokeRect(ox + 0.75 * ts, oy + 0.75 * ts, bw - 1.5 * ts, bh - 1.5 * ts);
+  ctx.strokeStyle = INK; ctx.lineWidth = 0.5 * ts; ctx.globalAlpha = 0.25;
+  ctx.strokeRect(ox + 4 * ts, oy + 4 * ts, bw - 8 * ts, bh - 8 * ts);
   ctx.globalAlpha = 1;
 
   // ── Dimension tick labels ─────────────────────────────────────────────────────
-  ctx.fillStyle = INK; ctx.font = '500 10px "Geist Mono", monospace';
+  const dimFs = Math.round(10 * ts);
+  ctx.fillStyle = INK; ctx.font = `500 ${dimFs}px "Geist Mono", monospace`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  ctx.fillText(`W ${sheet.w} ${unitLabel}`, ox + bw / 2, oy + bh + 5);
+  ctx.fillText(`W ${sheet.w} ${unitLabel}`, ox + bw / 2, oy + bh + 5 * ts);
   ctx.save();
-  ctx.translate(ox - 8, oy + bh / 2); ctx.rotate(-Math.PI / 2);
+  ctx.translate(ox - 8 * ts, oy + bh / 2); ctx.rotate(-Math.PI / 2);
   ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
   ctx.fillText(`L ${sheet.h} ${unitLabel}`, 0, 0);
   ctx.restore();
@@ -2474,7 +2479,12 @@ function drawSheetOnCtx(ctx, ox, oy, bw, bh, scale, sheet, used, free, kerf, uni
 function drawBoards(canvas, results, kerf, unitLabel, showLabels = true) {
   const dpr      = window.devicePixelRatio || 1;
   const displayW = canvas.parentElement.clientWidth - 40;
-  const pad = 24, labelH = 26, gap = 28;
+  // Scale all text/stroke/spacing proportionally to canvas width.
+  // 700px is the reference screen width where ts = 1.
+  const ts      = Math.max(1, displayW / 700);
+  const pad     = Math.round(24 * ts);
+  const labelH  = Math.round(26 * ts);
+  const gap     = Math.round(28 * ts);
 
   const maxW  = Math.max(...results.map(r => r.sheet.w));
   const scale = (displayW - pad * 2 - 20) / maxW;
@@ -2496,21 +2506,22 @@ function drawBoards(canvas, results, kerf, unitLabel, showLabels = true) {
     const ox = pad + (displayW - pad * 2 - bw) / 2;
 
     // Header
-    ctx.fillStyle = INK; ctx.font = '600 11px "Geist Mono", monospace';
+    const hfs = Math.round(11 * ts);
+    ctx.fillStyle = INK; ctx.font = `600 ${hfs}px "Geist Mono", monospace`;
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     ctx.fillText(sheet.label.toUpperCase(), ox, curY + labelH / 2);
 
     const pct = (packer.used.reduce((s, r) => s + (r.w + kerf) * (r.h + kerf), 0) / (sheet.w * sheet.h) * 100).toFixed(0);
-    ctx.fillStyle = ACCENT; ctx.font = '600 11px "Geist Mono", monospace';
+    ctx.fillStyle = ACCENT; ctx.font = `600 ${hfs}px "Geist Mono", monospace`;
     ctx.textAlign = 'right';
     ctx.fillText(`${pct}% USED`, ox + bw, curY + labelH / 2);
 
     // Rule
-    ctx.strokeStyle = INK; ctx.lineWidth = 0.75; ctx.globalAlpha = 0.15;
+    ctx.strokeStyle = INK; ctx.lineWidth = 0.75 * ts; ctx.globalAlpha = 0.15;
     ctx.beginPath(); ctx.moveTo(ox, curY + labelH - 2); ctx.lineTo(ox + bw, curY + labelH - 2); ctx.stroke();
     ctx.globalAlpha = 1;
 
-    drawSheetOnCtx(ctx, ox, curY + labelH, bw, bh, scale, sheet, packer.used, packer.free, kerf, unitLabel, showLabels);
+    drawSheetOnCtx(ctx, ox, curY + labelH, bw, bh, scale, sheet, packer.used, packer.free, kerf, unitLabel, showLabels, ts);
     curY += labelH + bh + gap;
   }
 }
