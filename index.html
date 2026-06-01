@@ -2171,12 +2171,12 @@ function countCuts(used, W, H, kerf) {
     // Left edge of piece (rip cut needed unless it's at sheet left edge)
     if (r.x > tol) xCuts.add(Math.round(r.x / tol) * tol);
     // Right edge of piece (rip cut needed unless it's at sheet right edge)
-    const rx = r.x + r.w + kerf;
+    const rx = r.x + r.w;
     if (rx < W - tol) xCuts.add(Math.round(rx / tol) * tol);
     // Top edge
     if (r.y > tol) yCuts.add(Math.round(r.y / tol) * tol);
     // Bottom edge
-    const ry = r.y + r.h + kerf;
+    const ry = r.y + r.h;
     if (ry < H - tol) yCuts.add(Math.round(ry / tol) * tol);
   }
   return xCuts.size + yCuts.size;
@@ -2233,7 +2233,7 @@ function packOnSheet(W, H, items, kerf, allowRotation, scrapPref = 'none', fewer
             normalOk  = item.grainDir !== 'height';
             rotatedOk = item.grainDir !== 'width';
           }
-          const ok = packer.insert(item.w - kerf, item.h - kerf, {
+          const ok = packer.insert(item.w + kerf, item.h + kerf, {
             origW: item.w, origH: item.h,
             label: item.label, color: item.color, pieceId: item.pieceId,
           }, normalOk, rotatedOk, scrapPref, mode);
@@ -2243,7 +2243,7 @@ function packOnSheet(W, H, items, kerf, allowRotation, scrapPref = 'none', fewer
         const compact = packer.used.length === 0 ? Infinity :
           Math.max(...packer.used.map(r => r.x + r.w)) *
           Math.max(...packer.used.map(r => r.y + r.h));
-        const usedArea = packer.used.reduce((s, r) => s + (r.w + kerf) * (r.h + kerf), 0);
+        const usedArea = packer.used.reduce((s, r) => s + r.w * r.h, 0);
         const waste = W * H - usedArea;
         const cuts = fewerCuts ? countCuts(packer.used, W, H, kerf) : 0;
 
@@ -2376,11 +2376,10 @@ function drawSheetOnCtx(ctx, ox, oy, bw, bh, scale, sheet, used, free, kerf, uni
 
   // ── Pieces ───────────────────────────────────────────────────────────────────
   for (const r of used) {
-    const kp = kerf * scale;
-    const rx = ox + r.x * scale + kp / 2;
-    const ry = oy + r.y * scale + kp / 2;
-    const rw = r.w * scale;
-    const rh = r.h * scale;
+    const rx = ox + r.x * scale;
+    const ry = oy + r.y * scale;
+    const rw = (r.rotated ? r.origH : r.origW) * scale;
+    const rh = (r.rotated ? r.origW : r.origH) * scale;
 
     // ① Super-soft red dot fill
     dotGrid(ctx, rx, ry, rw, rh, DOT_SP, DOT_R, DOT_COLOR);
