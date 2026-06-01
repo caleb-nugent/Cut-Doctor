@@ -1587,6 +1587,10 @@ header .logo-mark {
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5V2h8v3"/><rect x="2" y="5" width="12" height="7" rx="1"/><path d="M4 12v2h8v-2"/><circle cx="12.5" cy="8.5" r="0.8" fill="currentColor" stroke="none"/></svg>
             Print
           </button>
+          <button id="export-png" class="viz-btn" title="Download layout as PNG">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8"/><path d="M5 7l3 3 3-3"/><rect x="2" y="11" width="12" height="3" rx="1"/></svg>
+            PNG
+          </button>
           <button class="viz-btn" id="save-cut-list-btn" title="Save cut list" style="display:none">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H3a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V3a1 1 0 00-1-1z"/><path d="M10 2v5H6V2"/><path d="M4 11h8"/></svg>
             <span id="save-btn-label">Save</span>
@@ -2773,6 +2777,40 @@ document.getElementById('print-layout').addEventListener('click', () => {
   <script>window.onload = () => { window.print(); }<\/script>
   </body></html>`);
   win.document.close();
+});
+
+// ── Export PNG ────────────────────────────────────────────────────────────────
+document.getElementById('export-png').addEventListener('click', () => {
+  const canvas = document.getElementById('board-canvas');
+  if (!canvas._lastResults) return;
+
+  const results    = canvas._lastResults;
+  const kerfVal    = canvas._lastKerf;
+  const unitLabel  = canvas._lastUnitLabel;
+  const showLabels = document.getElementById('toggle-labels').classList.contains('active');
+
+  // drawBoards reads canvas.parentElement.clientWidth to set scale.
+  // Attach an offscreen canvas to a hidden 1800px container so we get a
+  // high-res render without touching the live canvas.
+  const EXPORT_W  = 1800;
+  const offscreen = document.createElement('canvas');
+
+  const fakeParent = document.createElement('div');
+  fakeParent.style.cssText = `position:fixed;left:-9999px;top:-9999px;width:${EXPORT_W}px;overflow:hidden`;
+  document.body.appendChild(fakeParent);
+  fakeParent.appendChild(offscreen);
+
+  drawBoards(offscreen, results, kerfVal, unitLabel, showLabels);
+
+  offscreen.toBlob(blob => {
+    document.body.removeChild(fakeParent);
+    const url = URL.createObjectURL(blob);
+    const a   = document.createElement('a');
+    a.href     = url;
+    a.download = `cut-layout-${new Date().toISOString().slice(0,10)}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, 'image/png');
 });
 
 // ── Shapr3D Import ────────────────────────────────────────────────────────────
