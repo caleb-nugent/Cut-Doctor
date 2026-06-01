@@ -2046,8 +2046,20 @@ function addPiece(w = 12, h = 12, label = '', qty = 1) {
 
 document.getElementById('add-piece').addEventListener('click', () => addPiece());
 
-// Seed with one default piece
-addPiece(24, 12, 'Sample Piece', 2);
+// Restore persisted state from last session, or seed with a default piece
+(function () {
+  try {
+    const saved = localStorage.getItem('cutdoctor-state');
+    if (saved) {
+      loadAppState(JSON.parse(saved));
+      // Restore active list context so overwrite-save still works after refresh
+      const active = JSON.parse(localStorage.getItem('cutdoctor-active-list') || 'null');
+      if (active?.id) { activeListId = active.id; activeListName = active.name; updateSaveLabel(); }
+      return; // skip default seed
+    }
+  } catch (e) { /* corrupt storage — fall through to default */ }
+  addPiece(24, 12, 'Sample Piece', 2);
+})();
 
 // ── Drag-to-reorder pieces ────────────────────────────────────────────────────
 (function () {
@@ -2584,7 +2596,14 @@ function recalculate({ silent = false } = {}) {
 // Debounce for live updates
 function scheduleRecalculate() {
   clearTimeout(_recalcTimer);
-  _recalcTimer = setTimeout(() => recalculate({ silent: true }), 300);
+  _recalcTimer = setTimeout(() => {
+    recalculate({ silent: true });
+    // Persist state so a page refresh restores the current project
+    try {
+      localStorage.setItem('cutdoctor-state', JSON.stringify(getAppState()));
+      localStorage.setItem('cutdoctor-active-list', JSON.stringify({ id: activeListId, name: activeListName }));
+    } catch (e) { /* storage full or private mode */ }
+  }, 300);
 }
 
 // ── Misc toggles ──────────────────────────────────────────────────────────────
