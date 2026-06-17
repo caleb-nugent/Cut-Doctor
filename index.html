@@ -1026,6 +1026,139 @@ header .logo-mark {
 }
 .header-logout-btn:hover { border-color: rgba(255,255,255,0.4); color: white; }
 
+/* ── Board Feet Calculator ───────────────────────────────────────────────────── */
+.bf-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+.bf-page-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.bf-page-sub {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  margin-bottom: 20px;
+}
+.bf-info {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  line-height: 1.7;
+}
+.bf-info strong { color: var(--text); }
+.bf-unit-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.bf-unit-toggle select {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 3px 6px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.bf-table-wrap {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+.bf-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 560px;
+}
+.bf-table thead tr { border-bottom: 1.5px solid var(--border); }
+.bf-table th {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  padding: 10px 10px 10px 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+.bf-table th.col-num { text-align: right; }
+.bf-table td {
+  padding: 2px 4px 2px 6px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.bf-table tr:last-child td { border-bottom: none; }
+.bf-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--text);
+  padding: 6px 4px;
+  outline: none;
+  min-width: 0;
+}
+.bf-input:focus { background: var(--primary-l); border-radius: 2px; }
+.bf-input.num { font-family: var(--font-mono); font-size: 0.78rem; text-align: right; }
+.bf-input::placeholder { color: var(--muted); opacity: 0.6; }
+.bf-result {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: right;
+  padding: 6px 8px;
+  white-space: nowrap;
+}
+.bf-result.has-value { color: var(--text); }
+.bf-del-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  line-height: 1;
+  opacity: 0.4;
+}
+.bf-del-btn:hover { color: var(--primary); opacity: 1; }
+.bf-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.bf-grand-total {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.bf-grand-total strong {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-left: 6px;
+}
+
 /* ── Projects page ───────────────────────────────────────────────────────────── */
 .projects-layout {
   max-width: 1100px;
@@ -1426,6 +1559,7 @@ header .logo-mark {
   <!-- Nav tabs -->
   <nav class="header-nav">
     <button class="header-nav-btn active" id="nav-calculator">Calculator</button>
+    <button class="header-nav-btn" id="nav-boardfeet">Board Feet</button>
     <button class="header-nav-btn" id="nav-projects">Projects</button>
   </nav>
   <!-- Right side controls -->
@@ -1679,6 +1813,50 @@ header .logo-mark {
     <div class="import-modal-footer">
       <button class="import-select-all" id="import-select-all">Select all / none</button>
       <button class="import-add-btn" id="import-add-btn" disabled>Add pieces</button>
+    </div>
+  </div>
+</div>
+
+<!-- Board Feet Calculator Page -->
+<div id="page-boardfeet" style="display:none">
+  <div class="bf-page">
+    <div class="bf-page-title">Board Foot Calculator</div>
+    <div class="bf-page-sub">1 board foot = 1 ft × 1 ft × 1 in (144 cubic inches)</div>
+
+    <div class="bf-info">
+      <strong>Formula:</strong> Board Feet = (Thickness &times; Width &times; Length) &divide; 144 &nbsp;—&nbsp; all dimensions in inches.<br>
+      Enter length in <strong>feet</strong> or <strong>inches</strong> using the toggle below. Qty multiplies the total per row.
+    </div>
+
+    <div class="bf-unit-toggle">
+      Length unit:
+      <select id="bf-length-unit">
+        <option value="ft">Feet</option>
+        <option value="in">Inches</option>
+      </select>
+    </div>
+
+    <div class="bf-table-wrap">
+      <table class="bf-table">
+        <thead>
+          <tr>
+            <th style="width:30%">Description</th>
+            <th class="col-num" style="width:9%">Qty</th>
+            <th class="col-num" style="width:11%">Thickness (in)</th>
+            <th class="col-num" style="width:11%">Width (in)</th>
+            <th class="col-num" id="bf-len-header" style="width:13%">Length (ft)</th>
+            <th class="col-num" style="width:13%">BF / piece</th>
+            <th class="col-num" style="width:11%">Total BF</th>
+            <th style="width:2%"></th>
+          </tr>
+        </thead>
+        <tbody id="bf-rows"></tbody>
+      </table>
+    </div>
+
+    <div class="bf-footer">
+      <button class="import-add-btn" id="bf-add-row" style="padding:8px 18px;font-size:0.75rem">+ Add row</button>
+      <div class="bf-grand-total">Total board feet: <strong id="bf-grand-total">0.00</strong></div>
     </div>
   </div>
 </div>
@@ -3241,13 +3419,16 @@ function updateAuthUI() {
 function showPage(page) {
   document.getElementById('page-calculator').style.display  = page === 'calculator' ? '' : 'none';
   document.getElementById('page-projects').style.display    = page === 'projects'   ? '' : 'none';
+  document.getElementById('page-boardfeet').style.display   = page === 'boardfeet'  ? '' : 'none';
   document.getElementById('nav-calculator').classList.toggle('active', page === 'calculator');
   document.getElementById('nav-projects').classList.toggle('active', page === 'projects');
+  document.getElementById('nav-boardfeet').classList.toggle('active', page === 'boardfeet');
   if (page === 'projects') renderProjectsPage();
 }
 
 document.getElementById('nav-home').addEventListener('click', () => showPage('calculator'));
 document.getElementById('nav-calculator').addEventListener('click', () => showPage('calculator'));
+document.getElementById('nav-boardfeet').addEventListener('click', () => showPage('boardfeet'));
 document.getElementById('nav-projects').addEventListener('click', () => showPage('projects'));
 
 // ── Auth modal ────────────────────────────────────────────────────────────────
@@ -3591,6 +3772,104 @@ document.getElementById('save-confirm-btn').addEventListener('click', async () =
 function escHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+// ── Board Feet Calculator ─────────────────────────────────────────────────────
+(function () {
+  let bfRows = [];
+  let bfIdCounter = 0;
+
+  function bfLengthUnit() {
+    return document.getElementById('bf-length-unit').value;
+  }
+
+  function calcBF(t, w, l) {
+    const tN = parseFloat(t) || 0;
+    const wN = parseFloat(w) || 0;
+    const lN = parseFloat(l) || 0;
+    const lIn = bfLengthUnit() === 'ft' ? lN * 12 : lN;
+    return (tN * wN * lIn) / 144;
+  }
+
+  function fmt(n) { return n > 0 ? n.toFixed(2) : '—'; }
+
+  function renderBFRows() {
+    const tbody = document.getElementById('bf-rows');
+    tbody.innerHTML = '';
+    let grand = 0;
+
+    bfRows.forEach(row => {
+      const bf    = calcBF(row.t, row.w, row.l);
+      const qty   = Math.max(1, parseInt(row.qty) || 1);
+      const total = bf * qty;
+      grand += total;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input class="bf-input" type="text" placeholder="e.g. Tabletop" value="${escHtml(row.desc)}" data-id="${row.id}" data-field="desc"></td>
+        <td><input class="bf-input num" type="number" min="1" step="1" value="${row.qty}" data-id="${row.id}" data-field="qty" style="width:52px"></td>
+        <td><input class="bf-input num" type="number" min="0" step="0.125" placeholder="1" value="${row.t}" data-id="${row.id}" data-field="t"></td>
+        <td><input class="bf-input num" type="number" min="0" step="0.25"  placeholder="6" value="${row.w}" data-id="${row.id}" data-field="w"></td>
+        <td><input class="bf-input num" type="number" min="0" step="0.5"   placeholder="8" value="${row.l}" data-id="${row.id}" data-field="l"></td>
+        <td class="bf-result ${bf > 0 ? 'has-value' : ''}" data-result-id="${row.id}-bf">${fmt(bf)}</td>
+        <td class="bf-result ${total > 0 ? 'has-value' : ''}" data-result-id="${row.id}-total">${total > 0 ? total.toFixed(2) : '—'}</td>
+        <td><button class="bf-del-btn" data-id="${row.id}" title="Remove row">&#x2715;</button></td>`;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('bf-grand-total').textContent = grand > 0 ? grand.toFixed(2) : '0.00';
+  }
+
+  function addBFRow() {
+    bfRows.push({ id: ++bfIdCounter, desc: '', qty: 1, t: '', w: '', l: '' });
+    renderBFRows();
+    const inputs = document.querySelectorAll('#bf-rows tr:last-child .bf-input');
+    if (inputs[0]) inputs[0].focus();
+  }
+
+  document.getElementById('bf-add-row').addEventListener('click', addBFRow);
+
+  document.getElementById('bf-rows').addEventListener('input', e => {
+    const input = e.target.closest('.bf-input');
+    if (!input) return;
+    const id    = parseInt(input.dataset.id);
+    const field = input.dataset.field;
+    const row   = bfRows.find(r => r.id === id);
+    if (!row) return;
+    row[field] = input.value;
+    // Re-render only the result cells to preserve focus
+    bfRows.forEach(r => {
+      const bf    = calcBF(r.t, r.w, r.l);
+      const qty   = Math.max(1, parseInt(r.qty) || 1);
+      const total = bf * qty;
+      const bfCell    = document.querySelector(`.bf-result[data-result-id="${r.id}-bf"]`);
+      const totalCell = document.querySelector(`.bf-result[data-result-id="${r.id}-total"]`);
+      if (bfCell)    { bfCell.textContent = fmt(bf);    bfCell.classList.toggle('has-value', bf > 0); }
+      if (totalCell) { totalCell.textContent = total > 0 ? total.toFixed(2) : '—'; totalCell.classList.toggle('has-value', total > 0); }
+    });
+    const grand = bfRows.reduce((s, r) => {
+      const bf  = calcBF(r.t, r.w, r.l);
+      const qty = Math.max(1, parseInt(r.qty) || 1);
+      return s + bf * qty;
+    }, 0);
+    document.getElementById('bf-grand-total').textContent = grand > 0 ? grand.toFixed(2) : '0.00';
+  });
+
+  document.getElementById('bf-rows').addEventListener('click', e => {
+    const btn = e.target.closest('.bf-del-btn');
+    if (!btn) return;
+    bfRows = bfRows.filter(r => r.id !== parseInt(btn.dataset.id));
+    renderBFRows();
+  });
+
+  document.getElementById('bf-length-unit').addEventListener('change', () => {
+    document.getElementById('bf-len-header').textContent =
+      `Length (${bfLengthUnit()})`;
+    renderBFRows();
+  });
+
+  // Seed with one blank row
+  addBFRow();
+})();
 </script>
 </body>
 </html>
