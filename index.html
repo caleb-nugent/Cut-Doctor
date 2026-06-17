@@ -1825,28 +1825,21 @@ header .logo-mark {
 
     <div class="bf-info">
       <strong>Formula:</strong> Board Feet = (Thickness &times; Width &times; Length) &divide; 144 &nbsp;—&nbsp; all dimensions in inches.<br>
-      Enter length in <strong>feet</strong> or <strong>inches</strong> using the toggle below. Qty multiplies the total per row.
-    </div>
-
-    <div class="bf-unit-toggle">
-      Length unit:
-      <select id="bf-length-unit">
-        <option value="ft">Feet</option>
-        <option value="in">Inches</option>
-      </select>
+      Enter length as feet + inches combined. Qty multiplies the total per row.
     </div>
 
     <div class="bf-table-wrap">
       <table class="bf-table">
         <thead>
           <tr>
-            <th style="width:30%">Description</th>
-            <th class="col-num" style="width:9%">Qty</th>
-            <th class="col-num" style="width:11%">Thickness (in)</th>
-            <th class="col-num" style="width:11%">Width (in)</th>
-            <th class="col-num" id="bf-len-header" style="width:13%">Length (ft)</th>
-            <th class="col-num" style="width:13%">BF / piece</th>
-            <th class="col-num" style="width:11%">Total BF</th>
+            <th style="width:26%">Description</th>
+            <th class="col-num" style="width:7%">Qty</th>
+            <th class="col-num" style="width:10%">Thickness (in)</th>
+            <th class="col-num" style="width:10%">Width (in)</th>
+            <th class="col-num" style="width:10%">Length (ft)</th>
+            <th class="col-num" style="width:10%">Length (in)</th>
+            <th class="col-num" style="width:11%">BF / piece</th>
+            <th class="col-num" style="width:10%">Total BF</th>
             <th style="width:2%"></th>
           </tr>
         </thead>
@@ -3778,15 +3771,10 @@ function escHtml(str) {
   let bfRows = [];
   let bfIdCounter = 0;
 
-  function bfLengthUnit() {
-    return document.getElementById('bf-length-unit').value;
-  }
-
-  function calcBF(t, w, l) {
-    const tN = parseFloat(t) || 0;
-    const wN = parseFloat(w) || 0;
-    const lN = parseFloat(l) || 0;
-    const lIn = bfLengthUnit() === 'ft' ? lN * 12 : lN;
+  function calcBF(t, w, lft, lin) {
+    const tN   = parseFloat(t)   || 0;
+    const wN   = parseFloat(w)   || 0;
+    const lIn  = (parseFloat(lft) || 0) * 12 + (parseFloat(lin) || 0);
     return (tN * wN * lIn) / 144;
   }
 
@@ -3798,7 +3786,7 @@ function escHtml(str) {
     let grand = 0;
 
     bfRows.forEach(row => {
-      const bf    = calcBF(row.t, row.w, row.l);
+      const bf    = calcBF(row.t, row.w, row.lft, row.lin);
       const qty   = Math.max(1, parseInt(row.qty) || 1);
       const total = bf * qty;
       grand += total;
@@ -3806,10 +3794,11 @@ function escHtml(str) {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><input class="bf-input" type="text" placeholder="e.g. Tabletop" value="${escHtml(row.desc)}" data-id="${row.id}" data-field="desc"></td>
-        <td><input class="bf-input num" type="number" min="1" step="1" value="${row.qty}" data-id="${row.id}" data-field="qty" style="width:52px"></td>
-        <td><input class="bf-input num" type="number" min="0" step="0.125" placeholder="1" value="${row.t}" data-id="${row.id}" data-field="t"></td>
-        <td><input class="bf-input num" type="number" min="0" step="0.25"  placeholder="6" value="${row.w}" data-id="${row.id}" data-field="w"></td>
-        <td><input class="bf-input num" type="number" min="0" step="0.5"   placeholder="8" value="${row.l}" data-id="${row.id}" data-field="l"></td>
+        <td><input class="bf-input num" type="number" min="1" step="1" value="${row.qty}" data-id="${row.id}" data-field="qty" style="width:48px"></td>
+        <td><input class="bf-input num" type="number" min="0" step="0.125" placeholder="1" value="${row.t}"   data-id="${row.id}" data-field="t"></td>
+        <td><input class="bf-input num" type="number" min="0" step="0.25"  placeholder="6" value="${row.w}"   data-id="${row.id}" data-field="w"></td>
+        <td><input class="bf-input num" type="number" min="0" step="1"     placeholder="8" value="${row.lft}" data-id="${row.id}" data-field="lft"></td>
+        <td><input class="bf-input num" type="number" min="0" step="0.25"  placeholder="0" value="${row.lin}" data-id="${row.id}" data-field="lin"></td>
         <td class="bf-result ${bf > 0 ? 'has-value' : ''}" data-result-id="${row.id}-bf">${fmt(bf)}</td>
         <td class="bf-result ${total > 0 ? 'has-value' : ''}" data-result-id="${row.id}-total">${total > 0 ? total.toFixed(2) : '—'}</td>
         <td><button class="bf-del-btn" data-id="${row.id}" title="Remove row">&#x2715;</button></td>`;
@@ -3820,7 +3809,7 @@ function escHtml(str) {
   }
 
   function addBFRow() {
-    bfRows.push({ id: ++bfIdCounter, desc: '', qty: 1, t: '', w: '', l: '' });
+    bfRows.push({ id: ++bfIdCounter, desc: '', qty: 1, t: '', w: '', lft: '', lin: '' });
     renderBFRows();
     const inputs = document.querySelectorAll('#bf-rows tr:last-child .bf-input');
     if (inputs[0]) inputs[0].focus();
@@ -3836,21 +3825,17 @@ function escHtml(str) {
     const row   = bfRows.find(r => r.id === id);
     if (!row) return;
     row[field] = input.value;
-    // Re-render only the result cells to preserve focus
+    // Update only result cells to preserve focus
     bfRows.forEach(r => {
-      const bf    = calcBF(r.t, r.w, r.l);
+      const bf    = calcBF(r.t, r.w, r.lft, r.lin);
       const qty   = Math.max(1, parseInt(r.qty) || 1);
       const total = bf * qty;
       const bfCell    = document.querySelector(`.bf-result[data-result-id="${r.id}-bf"]`);
       const totalCell = document.querySelector(`.bf-result[data-result-id="${r.id}-total"]`);
-      if (bfCell)    { bfCell.textContent = fmt(bf);    bfCell.classList.toggle('has-value', bf > 0); }
+      if (bfCell)    { bfCell.textContent = fmt(bf); bfCell.classList.toggle('has-value', bf > 0); }
       if (totalCell) { totalCell.textContent = total > 0 ? total.toFixed(2) : '—'; totalCell.classList.toggle('has-value', total > 0); }
     });
-    const grand = bfRows.reduce((s, r) => {
-      const bf  = calcBF(r.t, r.w, r.l);
-      const qty = Math.max(1, parseInt(r.qty) || 1);
-      return s + bf * qty;
-    }, 0);
+    const grand = bfRows.reduce((s, r) => s + calcBF(r.t, r.w, r.lft, r.lin) * Math.max(1, parseInt(r.qty) || 1), 0);
     document.getElementById('bf-grand-total').textContent = grand > 0 ? grand.toFixed(2) : '0.00';
   });
 
@@ -3858,12 +3843,6 @@ function escHtml(str) {
     const btn = e.target.closest('.bf-del-btn');
     if (!btn) return;
     bfRows = bfRows.filter(r => r.id !== parseInt(btn.dataset.id));
-    renderBFRows();
-  });
-
-  document.getElementById('bf-length-unit').addEventListener('change', () => {
-    document.getElementById('bf-len-header').textContent =
-      `Length (${bfLengthUnit()})`;
     renderBFRows();
   });
 
